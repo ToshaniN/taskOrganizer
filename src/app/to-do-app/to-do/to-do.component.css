@@ -1,0 +1,51 @@
+ul {
+    list-style-type: none;
+}
+
+#taskList {
+    margin-left: 20px;
+}
+
+td,th {
+    padding-right: 25px;
+}
+
+#AName, #AStatus {
+    display: inline-block;
+    margin-bottom: 0px;
+    width: 500px;
+}
+
+#agendaHeader {
+    background-color:bisque;
+    padding-bottom: 5px;
+}
+
+#tasksHeading {
+    background-color: rgb(138, 207, 209);
+    margin-bottom: 0px;
+    margin-top: 5px;
+}
+
+body {
+    background-color:floralwhite;
+    font-family: Cambria, Cochin;
+}
+
+button {
+    background-color: rgb(138, 207, 209);
+    border-radius: 5px;
+}
+
+input {
+    background-color: floralwhite;
+    border-radius: 5px;
+}
+
+#taskName, #taskInfo {
+    display: inline-block;
+}
+
+h1 {
+    text-align: center;
+}
