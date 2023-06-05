@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ToDoAppModule } from './to-do-app/to-do-app.module'
+import { ToDoAppModule } from './to-do-app/to-do-app.module';
 
 @NgModule({
   declarations: [

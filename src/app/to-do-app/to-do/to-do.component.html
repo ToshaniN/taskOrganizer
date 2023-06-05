@@ -2,13 +2,19 @@
     <h1>Task Organizer</h1>
     <ul>
         <!--For each agenda-->
-        <li *ngFor="let agenda of todoList">
+        <li *ngFor="let agenda of todoList;let index = index;">
             <div id="agendaHeader">
-                <h2 id="AName">{{ agenda.name }}</h2> 
-                <h3 id="AStatus"> Status: {{ agenda.status }}</h3> 
+                <h2 id="AName">
+                    <input [(ngModel)]="todoList[index].name">
+                    <!-- {{ agenda.name }} -->
+                </h2> 
+                <h3 id="AStatus"> Status: 
+                    <select [(ngModel)]="todoList[index].status">
+                        <option *ngFor="let status of agendaStatusOptions">{{ status.name }}</option>
+                    </select>
+                    <!-- {{ agenda.status }} -->
+                </h3> 
             </div>
-            <!-- <h2 id="AName">{{ agenda.name }}</h2> 
-            <h3 id="AStatus"> Status: {{ agenda.status }}</h3> ' -->
             <h3 id="tasksHeading">Tasks</h3>
             <!--For each task in agenda-->
             <table>
@@ -21,27 +27,42 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let task of agenda.Tasks">
-                        <td>{{task.title}}</td>
+                    <tr *ngFor="let task of agenda.Tasks;let i = index;">
+                        <td><input [(ngModel)]="agenda.Tasks[i].title"></td>
+                        <td><input [(ngModel)]="agenda.Tasks[i].dueDate"></td>
+                        <td>
+                            <select [(ngModel)]="agenda.Tasks[i].priority">
+                                <option *ngFor="let p of priorityOptions">{{ p.name }}</option>
+                            </select> 
+                        </td>
+                        <td>
+                            <select [(ngModel)]="agenda.Tasks[i].status">
+                                <option *ngFor="let s of taskStatusOptions">{{ s.name }}</option>
+                            </select>    
+                        </td>
+                        <!-- <td>{{task.title}}</td>
                         <td>{{task.dueDate}}</td>
                         <td>{{task.priority}}</td>
-                        <td>{{task.status}}</td>
+                        <td>{{task.status}}</td> -->
                     </tr>
                 </tbody>
             </table>
             
             <!--Create new task button-->
             <form [formGroup]="newTaskForm">
-                <div id="taskInputs" *ngIf="agenda.wantNewTask" (focusout)="createTask(agenda.name)">
+                <div id="taskInputs" *ngIf="agenda.wantNewTask" appClickedOutside (clickedOutside)="createTask(agenda.name)">
                     <input type="text" id="taskName" placeholder="Title" formControlName="newTitle">
-                    <div id="taskInfo" > <!--*ngIf="newTaskForm.get('newTitle').valid"-->
-                        <input id="taskDate" tabindex="-1" type="text" placeholder="Due Date" formControlName="newDate">
-                        <input id="taskPrior" tabindex="-1" type="text" placeholder="Priority" formControlName="newPriority">
+                    <div id="taskInfo">
+                        <input id="taskDate" type="text" placeholder="Due Date" formControlName="newDate">
+                        <select id="taskPrior"  formControlName="newPriority">
+                            <option value="" disabled selected></option>
+                            <option placeholder="priority" *ngFor="let p of priorityOptions">{{ p.name }}</option>
+                        </select>
                     </div>
                 </div>
                 <div>
-                    <button type="button" id="addTask" (click)="displayTaskInputs(agenda.name)">Add Task</button>
-                </div>
+                    <button type="button" [hidden]="agenda.wantNewTask" id="addTask" name="addTask" (click)="displayTaskInputs(agenda.name)">Add Task</button>
+                </div> 
                 <br><br>
             </form>
         </li>
@@ -51,7 +72,7 @@
                 <input type="text" placeholder="Agenda Name" formControlName="newAgendaName" (focusout)="createAgenda()">
             </div>
             <div>
-                <button type="button" id="addAgenda" (click)="displayAgendaInputs()">Add Agenda</button>
+                <button type="button" id="addAgenda" [hidden]="wantNewAgenda" (click)="displayAgendaInputs()">Add Agenda</button>
             </div>
         </form>
     </ul>

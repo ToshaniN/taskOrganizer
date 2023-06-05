@@ -13,17 +13,17 @@ export class ToDoComponent implements OnInit {
   wantNewAgenda = false;
   todoList = [
     { "name": "Agenda1",
-      "status": "In Dev",
+      "status": "Not Started",
       "Tasks" : [
         { "title": "Task1",
           "description": "first task in the agenda",
-          "status": "not started",
+          "status": "Open",
           "dueDate": "June 28",
           "priority": 2
         },
         { "title": "Task2",
           "description": "second task in the agenda",
-          "status": "started",
+          "status": "Open",
           "dueDate": "June 14",
           "priority": 1
         }
@@ -31,17 +31,17 @@ export class ToDoComponent implements OnInit {
       "wantNewTask": false      
     },
     { "name": "Agenda2",
-      "status": "Not started",
+      "status": "On track",
       "Tasks" : [
         { "title": "Task3",
           "description": "third task in the agenda",
-          "status": "not started",
+          "status": "Ready for QA",
           "dueDate": "June 29",
           "priority": 2
         },
         { "title": "Task4",
           "description": "fourth task in the agenda",
-          "status": "not started",
+          "status": "Done",
           "dueDate": "July 1",
           "priority": 3
         }
@@ -49,6 +49,76 @@ export class ToDoComponent implements OnInit {
       "wantNewTask": false      
     }
   ];
+
+  agendaStatusOptions = [
+    {
+      "value" : "notStarted",
+      "name" : "Not Started"
+    },
+    {
+      "value" : "onTrack",
+      "name" : "On track"
+    },    
+    {
+      "value" : "offTrack",
+      "name" : "Off track"
+    },
+    {
+      "value" : "onHold",
+      "name" : "On hold"
+    },
+    {
+      "value" : "complete",
+      "name" : "Complete"
+    }
+  ]
+
+  taskStatusOptions = [
+    {
+      "value": "open",
+      "name": "Open"
+    },
+    {
+      "value": "inDev",
+      "name": "In development"
+    },
+    {
+      "value": "readyQA",
+      "name": "Ready for QA"
+    },
+    {
+      "value": "inQA",
+      "name": "In QA"
+    },
+    {
+      "value": "done",
+      "name": "Done"
+    },
+  ]
+
+  priorityOptions = [
+    {
+      "value": "p1",
+      "name": 1
+    },
+    {
+      "value": "p2",
+      "name": 2
+    },
+    {
+      "value": "p3",
+      "name": 3
+    },
+    {
+      "value": "p4",
+      "name": 4
+    },
+    {
+      "value": "p5",
+      "name": 5
+    }
+  ]
+
 
   constructor(private fb:FormBuilder) { }
 
@@ -59,18 +129,6 @@ export class ToDoComponent implements OnInit {
       newPriority: ['', [Validators.required]],
       newAgendaName: ['', [Validators.required]]
     })
-    // interface agenda {
-    //   name: string
-    //   status:string
-    //   Tasks:tasks
-    // }
-
-    // interface tasks {
-    //   title:string
-    //   description:string
-    //   due_date:string
-    //   priority:any
-    // }
   }
 
   //GET methods
@@ -93,8 +151,6 @@ export class ToDoComponent implements OnInit {
   // TASK METHODS ........................................................
   displayTaskInputs(agenda) {
     this.todoList.find(a => a.name == agenda).wantNewTask = true;
-    let button = <HTMLElement>document.getElementById("addTask");
-    button.hidden = true;
   }
 
   removeTaskInputs(agenda) {
@@ -108,54 +164,30 @@ export class ToDoComponent implements OnInit {
   }
 
   createTask(agenda) {
-    // console.log("focus out")
+    console.log("focus out")
     // return;
     if (this.newTitle.valid) {
-      // let dateInput = document.getElementById("taskDate")
-      // let priorInput = document.getElementById("taskPrior")
-      // if (document.activeElement.id == 'taskDate') {
-      //   console.log('There was focus')
-      //   return;
-      // }
-
-      if(!this.newDate.valid) {
-        this.newDate.setValue("not set");
-      }
-      if(!this.newPriority.valid) {
-        this.newPriority.setValue("not set");
-      }
       let newTask = {
         "title": this.newTitle.value, 
         "description": "Not Set", 
-        "status": "not started", 
+        "status": "Open", 
         "dueDate": this.newDate.value, 
         "priority": this.newPriority.value
       }
       this.todoList.find(a => a.name == agenda).Tasks.push(newTask);
       this.resetTaskInputs();
       this.removeTaskInputs(agenda);
-    } else {
-      if (this.newDate.valid || this.newPriority.valid) {
-        return;
-      }
-      this.removeTaskInputs(agenda);
-    }
-    let button = <HTMLElement>document.getElementById("addTask");
-    button.hidden = false;
+    } //else {
+    //   // if (this.newDate.valid || this.newPriority.valid) {
+    //   //   return;
+    //   // }
+    //   this.removeTaskInputs(agenda);
+    // }
+    this.resetTaskInputs();
+    this.removeTaskInputs(agenda);
   }
   //......................................................................
 
-  // taskDiv = <HTMLElement>document.getElementById("taskInputs");
-  // lostFocus(agenda) {
-  //   this.taskDiv.addEventListener('focusout', function (e) {
-  //     if (this.taskDiv.contains(e.relatedTarget as HTMLInputElement)) {
-  //       return;
-  //     } else {
-  //       console.log("works")
-  //     }
-  //   });
-  // }
-  
 
   // AGENDA METHODS ......................................................
   displayAgendaInputs() {
@@ -173,12 +205,10 @@ export class ToDoComponent implements OnInit {
   }
 
   createAgenda() {
-    let button = <HTMLElement>document.getElementById("addAgenda");
-    button.hidden = false;
     if (this.newAgendaName.valid) {
       let newAgenda = {
         "name": this.newAgendaName.value,
-        "status": "Not started",
+        "status": "Not Started",
         "Tasks": [],
         "wantNewTask": false
       }
@@ -192,5 +222,9 @@ export class ToDoComponent implements OnInit {
   }
   //......................................................................
 
-  
+  tableRowClick() {
+    console.log("clicked outside")
+  }
+
+
 }

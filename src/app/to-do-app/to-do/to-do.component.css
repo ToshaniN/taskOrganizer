@@ -1,13 +1,35 @@
+/* General */
 ul {
     list-style-type: none;
 }
 
-#taskList {
-    margin-left: 20px;
-}
-
 td,th {
     padding-right: 25px;
+}
+
+body {
+    background-color:floralwhite;
+    font-family: Cambria, Cochin;
+}
+
+button {
+    background-color: rgb(138, 207, 209);
+    border-radius: 5px;
+}
+
+input, select, option {
+    background-color: floralwhite;
+    border-radius: 5px;
+}
+
+h1 {
+    text-align: center;
+}
+
+
+/* ID Specific */
+#taskList {
+    margin-left: 20px;
 }
 
 #AName, #AStatus {
@@ -27,25 +49,11 @@ td,th {
     margin-top: 5px;
 }
 
-body {
-    background-color:floralwhite;
-    font-family: Cambria, Cochin;
-}
-
-button {
-    background-color: rgb(138, 207, 209);
-    border-radius: 5px;
-}
-
-input {
-    background-color: floralwhite;
-    border-radius: 5px;
-}
-
 #taskName, #taskInfo {
     display: inline-block;
 }
 
-h1 {
-    text-align: center;
+#taskName, #taskDate, #taskPrior {
+    margin-right: 25px;
+    margin-left: 2px;
 }
