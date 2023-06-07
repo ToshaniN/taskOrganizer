@@ -1,0 +1,35 @@
+.sideDiv {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1047;
+  top: 0;
+  right: 0;
+  //background-color: rgb(255, 255, 255);
+  background-color: floralwhite;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 40px;
+}
+
+.sideDiv .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 30px;
+  margin-left: 50px;
+}
+
+.heading {
+  // position: absolute;
+  // top: 8px;
+  // font-size: 16px;
+  // padding-left: 12px; 
+  text-align: center;
+  background-color: bisque;
+  padding: 10px;
+}
+
+.closebtn {
+  color: #11b0b6;
+}

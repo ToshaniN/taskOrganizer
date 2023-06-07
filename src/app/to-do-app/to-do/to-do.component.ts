@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
+import { SideContainerComponent } from '../side-container/side-container.component';
 
 @Component({
   selector: 'app-to-do',
@@ -16,16 +17,31 @@ export class ToDoComponent implements OnInit {
       "status": "Not Started",
       "Tasks" : [
         { "title": "Task1",
-          "description": "first task in the agenda",
+          "dueDate": "2023-06-14",
+          "priority": 2,
           "status": "Open",
-          "dueDate": "June 28",
-          "priority": 2
+          "description": "first task in the agenda",
+          "comments": [
+            {
+              "comment_text": "this needs to be done soon"
+            },
+            {
+              "comment_text": "start working on this next week"
+            }
+          ],
+          "wantNewComment": false
         },
         { "title": "Task2",
-          "description": "second task in the agenda",
+          "dueDate": "2023-06-28",
+          "priority": 1,
           "status": "Open",
-          "dueDate": "June 14",
-          "priority": 1
+          "description": "second task in the agenda",
+          "comments": [
+            {
+              "comment_text": "finish Task1 prior to this"
+            }
+          ],
+          "wantNewComment": false
         }
       ],
       "wantNewTask": false      
@@ -34,16 +50,28 @@ export class ToDoComponent implements OnInit {
       "status": "On track",
       "Tasks" : [
         { "title": "Task3",
-          "description": "third task in the agenda",
+          "dueDate": "2023-06-29",
+          "priority": 2,
           "status": "Ready for QA",
-          "dueDate": "June 29",
-          "priority": 2
+          "description": "third task in the agenda",
+          "comments": [
+            {
+              "comment_text": "QA team has started working on this, please change status"
+            }
+          ],
+          "wantNewComment": false
         },
         { "title": "Task4",
-          "description": "fourth task in the agenda",
+          "dueDate": "2023-07-05",
+          "priority": 3,
           "status": "Done",
-          "dueDate": "July 1",
-          "priority": 3
+          "description": "fourth task in the agenda",
+          "comments": [
+            {
+              "comment_text": "Please assign a technical writer to update the documentation"
+            }
+          ],
+          "wantNewComment": false
         }
       ],
       "wantNewTask": false      
@@ -119,6 +147,17 @@ export class ToDoComponent implements OnInit {
     }
   ]
 
+  //@Viewchild for side-container
+  @ViewChild('details', {static:false}) details: SideContainerComponent;
+  container_name = "";
+  agenda_index = 0;
+  task_index = 0;
+  newComment="";
+
+  // titleFocus = false;
+  // dateFocus = false;
+  // priorFocus = false;
+  // statusFocus = false;
 
   constructor(private fb:FormBuilder) { }
 
@@ -165,26 +204,44 @@ export class ToDoComponent implements OnInit {
 
   createTask(agenda) {
     console.log("focus out")
-    // return;
     if (this.newTitle.valid) {
       let newTask = {
-        "title": this.newTitle.value, 
-        "description": "Not Set", 
-        "status": "Open", 
+        "title": this.newTitle.value,  
         "dueDate": this.newDate.value, 
-        "priority": this.newPriority.value
+        "priority": this.newPriority.value,
+        "status": "Open",
+        "description": "",
+        "comments":[],
+        "wantNewComment": false
       }
       this.todoList.find(a => a.name == agenda).Tasks.push(newTask);
-      this.resetTaskInputs();
-      this.removeTaskInputs(agenda);
-    } //else {
-    //   // if (this.newDate.valid || this.newPriority.valid) {
-    //   //   return;
-    //   // }
-    //   this.removeTaskInputs(agenda);
-    // }
+    }
     this.resetTaskInputs();
     this.removeTaskInputs(agenda);
+  }
+
+  openDetails(taskIndex:number, agendaIndex) {
+    this.agenda_index = agendaIndex;
+    this.task_index = taskIndex;
+    this.container_name = this.todoList[this.agenda_index].Tasks[this.task_index].title
+    this.details.openContainer();
+  }
+  //......................................................................
+
+  // COMMENT METHODS .....................................................
+  displayCommentInput() {
+    this.todoList[this.agenda_index].Tasks[this.task_index].wantNewComment = true;
+  }
+
+  addComment() {
+    if (this.newComment != "") {
+      let commentToAdd = {
+        "comment_text": this.newComment
+      }
+      this.todoList[this.agenda_index].Tasks[this.task_index].comments.push(commentToAdd)
+    }
+    this.newComment = "";
+    this.todoList[this.agenda_index].Tasks[this.task_index].wantNewComment = false;
   }
   //......................................................................
 
@@ -192,8 +249,6 @@ export class ToDoComponent implements OnInit {
   // AGENDA METHODS ......................................................
   displayAgendaInputs() {
     this.wantNewAgenda = true;
-    let button = <HTMLElement>document.getElementById("addAgenda");
-    button.hidden = true;
   }
 
   removeAgendaInputs() {
@@ -224,7 +279,16 @@ export class ToDoComponent implements OnInit {
 
   tableRowClick() {
     console.log("clicked outside")
+    //console.log(this.titleFocus)
   }
+
+  // inFocus(name) {
+  //   console.log("in focus")
+  //   if (name == 'title') {
+  //     this.titleFocus = true;
+  //   }
+  //   console.log(this.titleFocus)
+  // }
 
 
 }

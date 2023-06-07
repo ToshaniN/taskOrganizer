@@ -1,6 +1,7 @@
 /* General */
 ul {
     list-style-type: none;
+    padding-left: 10px;
 }
 
 td,th {
@@ -10,6 +11,7 @@ td,th {
 body {
     background-color:floralwhite;
     font-family: Cambria, Cochin;
+
 }
 
 button {
@@ -22,15 +24,30 @@ input, select, option {
     border-radius: 5px;
 }
 
+option[value=""][disabled] {
+    display: none;
+}
+
 h1 {
     text-align: center;
 }
 
+h4, textarea {
+    margin-left: 10px;
+}
+
+textarea {
+    background-color: floralwhite;
+    border-radius: 5px;
+    width: 300px;
+}
+
 
 /* ID Specific */
-#taskList {
+/* #taskList {
     margin-left: 20px;
-}
+    padding-left: 20px;
+} */
 
 #AName, #AStatus {
     display: inline-block;
@@ -56,4 +73,8 @@ h1 {
 #taskName, #taskDate, #taskPrior {
     margin-right: 25px;
     margin-left: 2px;
+}
+
+#desText {
+    width: 500px;
 }

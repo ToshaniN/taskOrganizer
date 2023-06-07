@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ToDoComponent } from './to-do/to-do.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ClickedOutsideDirective } from '../directives/clicked-outside.directive';
+import { SideContainerComponent } from './side-container/side-container.component';
 
 @NgModule({
-  declarations: [ToDoComponent, ClickedOutsideDirective],
+  declarations: [ToDoComponent, SideContainerComponent, ClickedOutsideDirective],
   imports: [
     CommonModule,
     ReactiveFormsModule,
