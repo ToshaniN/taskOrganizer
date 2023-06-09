@@ -30,7 +30,7 @@
                 <tbody>
                     <tr id="existingTask{{i}}" name="rows" *ngFor="let task of agenda.Tasks; let i = index;"> <!-- [appClickedOutside]="titleFocus" (clickedOutside)="tableRowClick()"> -->
                         <td><input [(ngModel)]="task.title"></td> <!--(focus)="inFocus('title')"-->
-                        <td><input type="date" [(ngModel)]="task.dueDate"></td>
+                        <td><input type="datetime-local" [(ngModel)]="task.dueDate"></td>
                         <td>
                             <select [(ngModel)]="task.priority">
                                 <option value="" disabled selected>Priority</option>
