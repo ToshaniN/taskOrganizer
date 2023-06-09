@@ -52,7 +52,8 @@ class TaskCreate(Resource):
 # '/task/update'
 class TaskUpdate(Resource):
     def post(self):
-        return 'updatedTask'
+        receivedInfo = request.get_json()
+        return TaskHandler.updateTask(receivedInfo)
     
 # '/task/delete'
 class TaskDelete(Resource):
@@ -72,12 +73,14 @@ class CommentAdd(Resource):
 # '/comment/update'
 class CommentUpdate(Resource):
     def post(self):
-        return 'updatedComment'
+        receivedInfo = request.get_json()
+        return CommentHandler.updateComment(receivedInfo)
     
 # '/comment/remove'
 class CommentRemove(Resource):
     def post(self):
-        return 'deletedComment'
+        receivedinfo = request.get_json()
+        return CommentHandler.deleteComment(receivedinfo)
 
 # '/comment/get_all'
 class CommentGetAll(Resource):
