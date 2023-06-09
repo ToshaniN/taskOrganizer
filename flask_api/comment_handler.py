@@ -1,12 +1,9 @@
-from flask import render_template
-from database import agendas, tasks, comments, session
-from sqlalchemy import func, exc
+from database import comments, session
+from sqlalchemy import func
+from makeResponse import MakeResponse
 
 class CommentHandler:
     def createNewComment(receivedInfo):
-        # comment2task = receivedInfo["comment2task"]
-        # comment_text = receivedInfo["comment_text"]
-        # newComment = comments(comment2task=comment2task, comment_text=comment_text, status="Active")
         newComment = comments(status="Active")
         for key in receivedInfo:
             setattr(newComment, key, receivedInfo[key])
@@ -19,16 +16,16 @@ class CommentHandler:
             return response
         else:
             addedId = session.query(func.max(comments.id)).first()
+            justAdded = session.query(comments).filter(comments.id==addedId[0]).first()
+            datarec = MakeResponse.createResponse(justAdded)
             response = {"errCode":0,
-                        "datarec": {"id": int(addedId[0]),
-                                    "comment2task": newComment.comment2task, 
-                                    "comment_text": newComment.comment_text}}
+                        "datarec": datarec}
         return response
     
+
     def updateComment(receivedInfo):
         id = receivedInfo["id"]
         toUpdate = session.query(comments).filter(comments.id==id).first()
-        # toUpdate.comment_text = receivedInfo["comment_text"]
         for key in receivedInfo:
             setattr(toUpdate, key, receivedInfo[key])
         try:
@@ -38,12 +35,12 @@ class CommentHandler:
             response = {"errCode" : 1, "errMsg" : str(err)}
             return response
         else:
+            datarec = MakeResponse.createResponse(toUpdate)
             response = {"errCode":0, 
-                        "datarec": {"id": id,
-                                    "comment2task": toUpdate.comment2task, 
-                                    "comment_text": toUpdate.comment_text}}
+                        "datarec": datarec}
         return response
     
+
     def deleteComment(receivedInfo):
         id = receivedInfo["id"]
         toDelete = session.query(comments).filter(comments.id==id).first()
@@ -55,8 +52,7 @@ class CommentHandler:
             response = {"errCode" : 1, "errMsg" : str(err)}
             return response
         else:
+            datarec = MakeResponse.createResponse(toDelete)
             response = {"errCode":0, 
-                        "datarec": {"id": id,
-                                    "comment2task": toDelete.comment2task, 
-                                    "comment_text": toDelete.comment_text}}
+                        "datarec": datarec}
         return response
