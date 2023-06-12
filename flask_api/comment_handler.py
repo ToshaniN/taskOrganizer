@@ -56,3 +56,15 @@ class CommentHandler:
             response = {"errCode":0, 
                         "datarec": datarec}
         return response
+
+
+    def getComments(receivedInfo):
+        comment2task = receivedInfo["comment2task"]
+        commentList = session.query(comments).filter(comments.comment2task==comment2task, comments.status=="Active")
+        datarec = []
+        if commentList is not None:
+            for comment in commentList:
+                datarec.append(MakeResponse.createResponse(comment))
+        response = {"errCode":0, 
+                    "datarec": datarec}
+        return response

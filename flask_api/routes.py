@@ -2,7 +2,6 @@ from app import api
 from url_resource import *
 
 class Routes:
-    # api.add_resource(Home, '/')
     api.add_resource(AgendaCreate, '/agenda/create')
     api.add_resource(AgendaUpdate, '/agenda/update')
     api.add_resource(AgendaDelete, '/agenda/delete')

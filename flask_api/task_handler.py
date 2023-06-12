@@ -4,7 +4,7 @@ from makeResponse import MakeResponse
 
 class TaskHandler:
     def createNewTask(receivedInfo):
-        newTask = tasks(status="Active")
+        newTask = tasks(task_status="Open", status="Active")
         for key in receivedInfo:
             setattr(newTask, key, receivedInfo[key])
         try:
@@ -22,7 +22,7 @@ class TaskHandler:
                         "datarec": datarec}
         return response
     
-    
+
     def updateTask(receivedInfo):
         id = receivedInfo["id"]
         toUpdate = session.query(tasks).filter(tasks.id==id).first()

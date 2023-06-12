@@ -4,7 +4,7 @@ from makeResponse import MakeResponse
 
 class AgendaHandler:
     def createNewAgenda(receivedInfo):
-        newAgenda = agendas(status="Active")
+        newAgenda = agendas(agenda_status="Not started", status="Active")
         for key in receivedInfo:
             setattr(newAgenda, key, receivedInfo[key])
         try:

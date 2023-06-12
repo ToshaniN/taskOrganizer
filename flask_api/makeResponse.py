@@ -1,8 +1,11 @@
+import datetime
+
 class MakeResponse:
     def createResponse(values):
         toReturn = {}
         for key in values.__table__.columns:
-            if (key.name == "create time"):
-                break
-            toReturn[key.name] = getattr(values, key.name)
+            value = getattr(values, key.name)
+            if (isinstance(value, datetime.datetime)):
+                value = str(value)
+            toReturn[key.name] = value
         return toReturn

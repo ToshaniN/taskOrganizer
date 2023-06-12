@@ -1,23 +1,17 @@
-from handler import Handler
 from agenda_handler import AgendaHandler
 from task_handler import TaskHandler
 from comment_handler import CommentHandler
+from agenda_task_handler import AgendaTaskHandler
 
 from flask_restful import Resource
-from flask import request, make_response
-from flask_cors import cross_origin
+from flask import request
 
 
-# GENERAL REQUESTS.....................................................
-# '/'
-# class Home(Resource):
-#     def post(self):
-#         return make_response(Handler.home()) 
-
+# ORIGINAL HIERARCHY.....................................................
 # '/get_agenda_task_hierarchy'
 class GetHierarchy(Resource):
     def post(self):
-        return 'originalDisplay'
+        return AgendaTaskHandler.createHierarchy()
 #......................................................................
 
 
@@ -79,11 +73,12 @@ class CommentUpdate(Resource):
 # '/comment/remove'
 class CommentRemove(Resource):
     def post(self):
-        receivedinfo = request.get_json()
-        return CommentHandler.deleteComment(receivedinfo)
+        receivedInfo = request.get_json()
+        return CommentHandler.deleteComment(receivedInfo)
 
 # '/comment/get_all'
 class CommentGetAll(Resource):
     def post(self):
-        return 'gotComments'
+        receivedInfo = request.get_json()
+        return CommentHandler.getComments(receivedInfo)
 #......................................................................
