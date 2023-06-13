@@ -16,10 +16,8 @@ class AgendaTaskHandler:
                 for task in tasksToIterate:
                     taskToAdd = session.query(tasks).filter(tasks.id == task).first() 
                     agendaToAdd["tasks"].append(MakeResponse.createResponse(taskToAdd))
-            # if (task != None):
-            #     agendaToAdd["Tasks"].append(MakeResponse.createResponse(task))
             response.append(agendaToAdd)
-        
+
         #Other approach:
         # agendaList = {}
         # for agenda, task in joined:

@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ToDoAppModule } from './to-do-app/to-do-app.module';
+import { HttpClientModule } from '@angular/common/http'
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import { ToDoAppModule } from './to-do-app/to-do-app.module';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    ToDoAppModule
+    ToDoAppModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
