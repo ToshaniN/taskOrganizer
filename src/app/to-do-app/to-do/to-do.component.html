@@ -29,9 +29,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr id="existingTask{{i}}" name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" (focusout)="updateTask($event, taskIndex, agendaIndex)"> <!-- [appClickedOutside]="titleFocus" (clickedOutside)="tableRowClick()"> -->
+                    <tr id="existingTask{{taskIndex}}" name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" (focusout)="updateTask($event, taskIndex, agendaIndex)"> <!-- [appClickedOutside]="titleFocus" (clickedOutside)="tableRowClick()"> -->
                         <td><input id="title" [(ngModel)]="task.title" (focus)="copyTask(taskIndex, agendaIndex)"></td>
-                        <td><input id="due_date" type="datetime-local" [(ngModel)]="task.dueDate" (focus)="copyTask(taskIndex, agendaIndex)"></td>
+                        <td><input id="due_date" type="datetime-local" [(ngModel)]="task.due_date" (focus)="copyTask(taskIndex, agendaIndex)"></td>
                         <td>
                             <select id="priority" [(ngModel)]="task.priority" (focus)="copyTask(taskIndex, agendaIndex)">
                                 <option value="" disabled selected>Priority</option>

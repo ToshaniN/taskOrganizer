@@ -16,13 +16,15 @@ export class ToDoComponent implements OnInit {
   // previousValues = [];
   agendaFieldCopy = {"name":"",
                      "agenda_status":""};
+  agendaCopied = false;
 
   taskFieldCopy = {"title":"",
-                   "due_date":"",
-                   "priority":"",
+                   "due_date":null,
+                   "priority":null,
                    "task_status":"",
                    "description":"" }
-
+  taskCopied = false
+  
   commentFieldCopy = {"comment_text":""}
 
   todoList = [
@@ -259,11 +261,15 @@ export class ToDoComponent implements OnInit {
   }
 
   copyTask(taskIndex, agendaIndex) {
+    if (this.taskCopied) {
+      return
+    }
     console.log("copying task")
     for (let key in this.taskFieldCopy) {
       this.taskFieldCopy[key] = this.todoList[agendaIndex].tasks[taskIndex][key]
     }
     console.log(JSON.stringify(this.taskFieldCopy))
+    this.taskCopied = true
   }
   
   updateTask(event, taskIndex, agendaIndex) {
@@ -283,6 +289,7 @@ export class ToDoComponent implements OnInit {
       }
     }
     if (Object.keys(payload).length === 1) { //only id present, no fields were edited
+      this.taskCopied = false
       return
     }
     console.log(JSON.stringify(payload))
@@ -309,6 +316,7 @@ export class ToDoComponent implements OnInit {
         this.todoList[agendaIndex].tasks[taskIndex][key] = this.taskFieldCopy[key]
       }
     }
+    this.taskCopied = false
   }
 
   deleteTask(taskIndex, agendaIndex) {
@@ -488,10 +496,14 @@ export class ToDoComponent implements OnInit {
 
 
   copyAgenda(agendaIndex) {
+    if (this.agendaCopied) {
+      return
+    }
     console.log("Copying the fields")
     this.agendaFieldCopy.name = this.todoList[agendaIndex].name
     this.agendaFieldCopy.agenda_status = this.todoList[agendaIndex].agenda_status
     console.log(JSON.stringify(this.agendaFieldCopy))
+    this.agendaCopied = true
   }
 
 
@@ -512,9 +524,9 @@ export class ToDoComponent implements OnInit {
       }
     }
     if (Object.keys(payload).length === 1) { //only id present, no fields were edited
+      this.agendaCopied = false
       return
     }
-
     let errorOccurred = false
     console.log(JSON.stringify(payload))
     this.flask.updateAgenda(payload)
@@ -539,6 +551,7 @@ export class ToDoComponent implements OnInit {
         this.todoList[agendaIndex][key] = this.agendaFieldCopy[key]
       }
     }
+    this.agendaCopied = false
   }
 
 
