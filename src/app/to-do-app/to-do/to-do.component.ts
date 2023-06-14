@@ -13,6 +13,18 @@ export class ToDoComponent implements OnInit {
 
   newTaskForm: FormGroup;
   wantNewAgenda = false;
+  // previousValues = [];
+  agendaFieldCopy = {"name":"",
+                     "agenda_status":""};
+
+  taskFieldCopy = {"title":"",
+                   "due_date":"",
+                   "priority":"",
+                   "task_status":"",
+                   "description":"" }
+
+  commentFieldCopy = {"comment_text":""}
+
   todoList = [
     // { "id":1,
     //   "name": "Agenda1",
@@ -84,6 +96,8 @@ export class ToDoComponent implements OnInit {
     //   "wantNewTask": false      
     // }
   ];
+
+  comments = [];
 
   agendaStatusOptions = [
     {
@@ -182,6 +196,8 @@ export class ToDoComponent implements OnInit {
           alert("An error occurred")
         }
       });
+
+      // this.previousValues = JSON.parse(JSON.stringify(this.todoList))
   }
 
   //GET methods
@@ -242,35 +258,57 @@ export class ToDoComponent implements OnInit {
     this.todoList[agendaIndex].wantNewTask = false;
   }
 
-  updateTask(changed, taskIndex, agendaIndex) {
-    console.log("focused out on " + changed.target.id)
-    let key = changed.target.id
-    let value = changed.target.value
-    if (key == 'title' && value == '') {
-      alert("Please enter a title for the task")
+  copyTask(taskIndex, agendaIndex) {
+    console.log("copying task")
+    for (let key in this.taskFieldCopy) {
+      this.taskFieldCopy[key] = this.todoList[agendaIndex].tasks[taskIndex][key]
+    }
+    console.log(JSON.stringify(this.taskFieldCopy))
+  }
+  
+  updateTask(event, taskIndex, agendaIndex) {
+    console.log("Updating task")
+    if (event.target.id == 'deleteTaskButton' || event.target.id == 'detailsButton') {
+        return
+    }
+    let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id}
+    for (let key in this.taskFieldCopy) {
+      if (key == 'title' && this.todoList[agendaIndex].tasks[taskIndex][key] == '') {
+          alert("Please enter a title for the task")
+          this.todoList[agendaIndex].tasks[taskIndex][key] = this.taskFieldCopy[key]
+          return
+      }
+      if (this.taskFieldCopy[key] != this.todoList[agendaIndex].tasks[taskIndex][key]) {
+        payload[key] = this.todoList[agendaIndex].tasks[taskIndex][key]
+      }
+    }
+    if (Object.keys(payload).length === 1) { //only id present, no fields were edited
       return
     }
-    if (key == 'detailsButton' || key == 'deleteTaskButton') {
-      return
-    }
-    console.log("new value: " + changed.target.value)
-    let jsonPayload = { "id": this.todoList[agendaIndex].tasks[taskIndex].id,
-                        [key]: value }
-    console.log(JSON.stringify(jsonPayload))
-    this.flask.updateTask(jsonPayload)
+    console.log(JSON.stringify(payload))
+
+    let errorOccurred = false
+    this.flask.updateTask(payload)
     .subscribe({
       next: (data) => {
         if (data['errCode'] == 0) {
           console.log("Success: " + JSON.stringify(data))
         } else {
           console.log("Failure: " + JSON.stringify(data))
+          errorOccurred = true
         }
       },
       error: (err) => {
         console.error(err)
+        errorOccurred = true
         alert("An error occurred")
       }
     });
+    if (errorOccurred) { //return edits to previous value
+      for (let key in this.taskFieldCopy) {
+        this.todoList[agendaIndex].tasks[taskIndex][key] = this.taskFieldCopy[key]
+      }
+    }
   }
 
   deleteTask(taskIndex, agendaIndex) {
@@ -296,14 +334,29 @@ export class ToDoComponent implements OnInit {
             alert("An error occurred")
           }
         });
-    }
-    
+    }    
   }
 
   openDetails(taskIndex:number, agendaIndex:number) {
     this.agenda_index = agendaIndex;
     this.task_index = taskIndex;
     this.container_name = this.todoList[this.agenda_index].tasks[this.task_index].title
+    let payload = {"comment2task": this.todoList[agendaIndex].tasks[taskIndex].id}
+    this.flask.getComments(payload)
+      .subscribe({
+        next: (data) => {
+          if (data['errCode'] == 0) {
+            console.log("Success: " + JSON.stringify(data))
+            this.comments = data['datarec']
+          } else {
+            console.log("Failure: " + JSON.stringify(data))
+          }
+        },
+        error: (err) => {
+          console.error(err)
+          alert("An error occurred")
+        }
+      });
     this.details.openContainer();
   }
   //......................................................................
@@ -313,15 +366,91 @@ export class ToDoComponent implements OnInit {
     this.todoList[this.agenda_index].tasks[this.task_index].wantNewComment = true;
   }
 
-  addComment() {
+  addComment(taskIndex, agendaIndex) {
     if (this.newComment != "") {
-      let commentToAdd = {
-        "comment_text": this.newComment
-      }
-      this.todoList[this.agenda_index].tasks[this.task_index].comments.push(commentToAdd)
+      let commentToAdd = {"comment2task": this.todoList[agendaIndex].tasks[taskIndex].id,
+                          "comment_text": this.newComment }
+      this.flask.addComment(commentToAdd)
+      .subscribe({
+        next: (data) => {
+          if (data['errCode'] == 0) {
+            console.log("Success: " + JSON.stringify(data))
+            this.comments.push(data["datarec"])
+          } else {
+            console.log("Failure: " + JSON.stringify(data))
+          }
+        },
+        error: (err) => {
+          console.error(err)
+          alert("An error occurred")
+        }
+      });
+      
+
     }
     this.newComment = "";
     this.todoList[this.agenda_index].tasks[this.task_index].wantNewComment = false;
+  }
+
+  copyComment(commentIndex) {
+    console.log("copying comment")
+    for (let key in this.commentFieldCopy) {
+      this.commentFieldCopy[key] = this.comments[commentIndex][key]
+    }
+    console.log(JSON.stringify(this.commentFieldCopy))
+  }
+
+  updateComment(commentIndex) {
+    let payload = {"id":this.comments[commentIndex].id}
+    if (this.commentFieldCopy.comment_text != this.comments[commentIndex].comment_text) {
+      payload["comment_text"] = this.comments[commentIndex].comment_text
+    } else {
+      return //nothing was changed
+    }
+
+    console.log("payload: " + JSON.stringify(payload))
+    let errorOccurred = false
+    this.flask.updateComment(payload)
+    .subscribe({
+      next: (data) => {
+        if (data['errCode'] == 0) {
+          console.log("Success: " + JSON.stringify(data))
+        } else {
+          errorOccurred = true
+          console.log("Failure: " + JSON.stringify(data))
+        }
+      },
+      error: (err) => {
+        console.error(err)
+        errorOccurred = true
+        alert("An error occurred")
+      }
+    });
+    if (errorOccurred) { //return edits to previous value
+        this.comments[commentIndex].comment_text = this.commentFieldCopy.comment_text   
+    }
+  }
+
+  deleteComment(commentIndex) {
+    var answer = confirm("Do you want to delete this comment?");
+    if (answer) {
+      let jsonPayload = {"id": this.comments[commentIndex].id}
+      this.flask.removeComment(jsonPayload)
+        .subscribe({
+          next: (data) => {
+            if (data['errCode'] == 0) {
+              this.comments.splice(commentIndex, 1)
+              console.log("Success: " + JSON.stringify(data))
+            } else {
+              console.log("Failure: " + JSON.stringify(data))
+            }
+          },
+          error: (err) => {
+            console.error(err)
+            alert("An error occurred")
+          }
+        });
+    }
   }
   //......................................................................
 
@@ -358,32 +487,58 @@ export class ToDoComponent implements OnInit {
   }
 
 
-  updateAgenda(changed, agendaIndex) {
-    let key = changed.target.id;
-    let value = changed.target.value
-    if (key == 'name' && value == '') {
-      alert("Please enter a name for the agenda")
+  copyAgenda(agendaIndex) {
+    console.log("Copying the fields")
+    this.agendaFieldCopy.name = this.todoList[agendaIndex].name
+    this.agendaFieldCopy.agenda_status = this.todoList[agendaIndex].agenda_status
+    console.log(JSON.stringify(this.agendaFieldCopy))
+  }
+
+
+  updateAgenda(event, agendaIndex) {
+    console.log("Updating agenda")
+    if (event.target.id == 'deleteAgendaButton') {
+        return
+    }
+    let payload = {"id":this.todoList[agendaIndex].id}
+    for (let key in this.agendaFieldCopy) {
+      if (key == 'name' && this.todoList[agendaIndex][key] == '') {
+          alert("Please enter a name for the agenda")
+          this.todoList[agendaIndex][key] = this.agendaFieldCopy[key]
+          return
+      }
+      if (this.agendaFieldCopy[key] != this.todoList[agendaIndex][key]) {
+        payload[key] = this.todoList[agendaIndex][key]
+      }
+    }
+    if (Object.keys(payload).length === 1) { //only id present, no fields were edited
       return
     }
-    if (key == 'deleteAgendaButton') {
-      return
-    }
-    let jsonPayload = {"id": this.todoList[agendaIndex].id, 
-                       [key]: value }                      
-    this.flask.updateAgenda(jsonPayload)
+
+    let errorOccurred = false
+    console.log(JSON.stringify(payload))
+    this.flask.updateAgenda(payload)
     .subscribe({
       next: (data) => {
         if (data['errCode'] == 0) {
           console.log("Success: " + JSON.stringify(data))
         } else {
+          errorOccurred = true
           console.log("Failure: " + JSON.stringify(data))
         }
       },
       error: (err) => {
         console.error(err)
+        errorOccurred = true
         alert("An error occurred")
       }
-    }); 
+    });
+    if (errorOccurred) { //return edits to previous value
+      console.log("inside error if")
+      for (let key in this.agendaFieldCopy) {
+        this.todoList[agendaIndex][key] = this.agendaFieldCopy[key]
+      }
+    }
   }
 
 

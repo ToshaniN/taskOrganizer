@@ -2,14 +2,14 @@
     <h1>Task Organizer</h1>
     <ul>
         <!--For each agenda-->
-        <li *ngFor="let agenda of todoList;let agendaIndex = index;">
+        <li *ngFor="let agenda of todoList;let agendaIndex = index;"> 
             <div id="agendaHeader" (focusout)="updateAgenda($event, agendaIndex)">
                 <h2 id="AName">
-                    <input id="name" [(ngModel)]="agenda.name" >
+                    <input id="name" [(ngModel)]="agenda.name" (focus)="copyAgenda(agendaIndex)">
                     <!-- {{ agenda.name }} -->
                 </h2> 
                 <h3 id="AStatus"> Status: 
-                    <select id="agenda_status" [(ngModel)]="agenda.agenda_status">
+                    <select id="agenda_status" [(ngModel)]="agenda.agenda_status" (focus)="copyAgenda(agendaIndex)">
                         <option *ngFor="let status of agendaStatusOptions">{{ status.name }}</option>
                     </select>
                     <!-- {{ agenda.status }} -->
@@ -30,16 +30,16 @@
                 </thead>
                 <tbody>
                     <tr id="existingTask{{i}}" name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" (focusout)="updateTask($event, taskIndex, agendaIndex)"> <!-- [appClickedOutside]="titleFocus" (clickedOutside)="tableRowClick()"> -->
-                        <td><input id="title" [(ngModel)]="task.title"></td>
-                        <td><input id="due_date" type="datetime-local" [(ngModel)]="task.dueDate"></td>
+                        <td><input id="title" [(ngModel)]="task.title" (focus)="copyTask(taskIndex, agendaIndex)"></td>
+                        <td><input id="due_date" type="datetime-local" [(ngModel)]="task.dueDate" (focus)="copyTask(taskIndex, agendaIndex)"></td>
                         <td>
-                            <select id="priority" [(ngModel)]="task.priority">
+                            <select id="priority" [(ngModel)]="task.priority" (focus)="copyTask(taskIndex, agendaIndex)">
                                 <option value="" disabled selected>Priority</option>
                                 <option *ngFor="let p of priorityOptions">{{ p.name }}</option>
                             </select> 
                         </td>
                         <td>
-                            <select id="task_status" [(ngModel)]="task.task_status">
+                            <select id="task_status" [(ngModel)]="task.task_status" (focus)="copyTask(taskIndex, agendaIndex)">
                                 <option *ngFor="let s of taskStatusOptions">{{ s.name }}</option>
                             </select>    
                         </td>
@@ -95,15 +95,17 @@
     <!--Description and Comments-->
     <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="1">
         <h4>Description</h4>
-        <textarea id="desText" [(ngModel)]="todoList[agenda_index].tasks[task_index].description"></textarea>
+        <textarea id="desText" [(ngModel)]="todoList[agenda_index].tasks[task_index].description" (focus)="copyTask(task_index, agenda_index)" 
+                  (focusout)="updateTask($event, task_index, agenda_index)"></textarea>
         <h4>Comments</h4>
         <ul>
-            <li *ngFor="let comment of todoList[agenda_index].tasks[task_index].comments">
-                <textarea [(ngModel)]="comment.comment_text"></textarea>
+            <li *ngFor="let comment of comments; let commentIndex = index">
+                <textarea [(ngModel)]="comment.comment_text" (focus)="copyComment(commentIndex)" (focusout)="updateComment(commentIndex)"></textarea>
+                <button id="deleteCommentButton" type="button" (click)="deleteComment(commentIndex)">&#x2716;</button>
             </li>
             <button name="addNewComment" type="button" [hidden]="todoList[agenda_index].tasks[task_index].wantNewComment" (click)="displayCommentInput()">New comment</button>
             <input type="text" id="commentInput" *ngIf="todoList[agenda_index].tasks[task_index].wantNewComment" 
-                    appClickedOutside (clickedOutside)="addComment()" [(ngModel)]="newComment">
+                    appClickedOutside (clickedOutside)="addComment(task_index, agenda_index)" [(ngModel)]="newComment">
         </ul>                       
     </app-side-container>    
 </body>
