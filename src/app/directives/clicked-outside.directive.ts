@@ -6,6 +6,7 @@ import {Directive, ElementRef, Output, EventEmitter, HostListener, Input} from '
 
 export class ClickedOutsideDirective {
 
+  insideRow = false
   constructor(private elementRef: ElementRef) { }
 
   @Output() public clickedOutside = new EventEmitter();
@@ -16,12 +17,8 @@ export class ClickedOutsideDirective {
   //   }
   // }
 
-  @HostListener('document:click', ['$event.target', '$event.target.id'])
-  public onClick(targetElement: any, id:string) {
-    // if (!targetElement) {
-    //   console.log("Here 1")
-    //   return;
-    // }
+  @HostListener('document:click', ['$event.target'])
+  public onClick(targetElement: any) {
     // let target = document.getElementById(id)
     // if (targetElement.name == "rows") {
     //   const clickedInside = this.elementRef.nativeElement.contains(target);
@@ -29,15 +26,17 @@ export class ClickedOutsideDirective {
     //     this.clickedOutside.emit(true);
     //   }
     // }
+    //console.log("id: " + id) //empty unless <td> element
     if (targetElement.name == "addTask" || targetElement.name == "addNewComment") {
       return;
     }
-    // if (id == "existingTask") {
-    //console.log("id: " + id)
-    // }
-    const clickedInside = this.elementRef.nativeElement.contains(targetElement);
-    if (!clickedInside) {
-      this.clickedOutside.emit(true);
+    const clickedInside = this.elementRef.nativeElement.contains(targetElement); // true if <td> element in current row is clicked, flase otherwise
+    if (clickedInside) { //if something inside the row in focus was clicked, the flag is true
+      console.log("click occurred inside the row")
+      this.insideRow = true
+    } else if (!clickedInside && this.insideRow) {  // click occurred outside the row, and since insideRow was true, it means the row's input element lost focus
+      this.clickedOutside.emit(true);              //  event will only be emmited if an input textbox was once in focus in the row, and now a click has occurred outside 
+      this.insideRow = false
     }
   }
 }

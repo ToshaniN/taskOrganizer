@@ -244,7 +244,7 @@ export class ToDoComponent implements OnInit {
         next: (data) => {
           if (data['errCode'] == 0) {
             console.log("Success: " + JSON.stringify(data))
-            this.todoList[agendaIndex].tasks.push(data["datarec"])
+            this.todoList[agendaIndex].tasks.push(data['datarec'])
             console.log("pushed datarec")
           } else {
             console.log("Failure: " + JSON.stringify(data))
@@ -274,9 +274,9 @@ export class ToDoComponent implements OnInit {
   
   updateTask(event, taskIndex, agendaIndex) {
     console.log("Updating task")
-    if (event.target.id == 'deleteTaskButton' || event.target.id == 'detailsButton') {
-        return
-    }
+    // if (event.target.id == 'deleteTaskButton' || event.target.id == 'detailsButton') {
+    //     return
+    // }
     let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id}
     for (let key in this.taskFieldCopy) {
       if (key == 'title' && this.todoList[agendaIndex].tasks[taskIndex][key] == '') {
@@ -509,9 +509,9 @@ export class ToDoComponent implements OnInit {
 
   updateAgenda(event, agendaIndex) {
     console.log("Updating agenda")
-    if (event.target.id == 'deleteAgendaButton') {
-        return
-    }
+    // if (event.target.id == 'deleteAgendaButton') {
+    //     return
+    // }
     let payload = {"id":this.todoList[agendaIndex].id}
     for (let key in this.agendaFieldCopy) {
       if (key == 'name' && this.todoList[agendaIndex][key] == '') {
@@ -579,10 +579,10 @@ export class ToDoComponent implements OnInit {
 
   //......................................................................
 
-  tableRowClick() {
-    console.log("clicked outside")
-    //console.log(this.titleFocus)
-  }
+  // tableRowClick(event, taskIndex, agendaIndex) {
+  //   console.log("clicked outside on: task index: "+ taskIndex + " agenda index: " + agendaIndex)
+  //   //console.log(this.titleFocus)
+  // }
 
 
 }

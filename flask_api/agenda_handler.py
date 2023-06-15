@@ -18,6 +18,7 @@ class AgendaHandler:
             addedId = session.query(func.max(agendas.id)).first()
             justAdded = session.query(agendas).filter(agendas.id==addedId[0]).first()
             datarec = MakeResponse.createResponse(justAdded)
+            datarec['tasks'] = []
             response = {"errCode":0,
                         "datarec": datarec}
         return response
