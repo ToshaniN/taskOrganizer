@@ -52,7 +52,7 @@
             
             <!--Create new task button-->
             <form [formGroup]="newTaskForm">
-                <div id="taskInputs" *ngIf="agenda.wantNewTask" appClickedOutside (clickedOutside)="createTask(agendaIndex)">
+                <div id="taskInputs" *ngIf="agenda.wantNewTask" appClickedOutside (clickedOutside)="createTask(agendaIndex)" (keydown.enter)="createTask(agendaIndex)">
                     <input type="text" id="taskName" placeholder="Title" formControlName="newTitle">
                     <div id="taskInfo">
                         <input id="taskDate" type="datetime-local" placeholder="Due Date" formControlName="newDate">
@@ -72,7 +72,7 @@
         <!--Create a new agenda button-->
         <form [formGroup]="newTaskForm">
             <div *ngIf="wantNewAgenda">
-                <input type="text" placeholder="Agenda Name" formControlName="newAgendaName" (focusout)="createAgenda()">
+                <input type="text" placeholder="Agenda Name" formControlName="newAgendaName" (focusout)="createAgenda()" (keydown.enter)="createAgenda()">
             </div>
             <div>
                 <button type="button" id="addAgenda" [hidden]="wantNewAgenda" (click)="displayAgendaInputs()">Add Agenda</button>
@@ -93,8 +93,8 @@
                 <button id="deleteCommentButton" type="button" (click)="deleteComment(commentIndex)">&#x2716;</button>
             </li>
             <button name="addNewComment" type="button" [hidden]="todoList[agenda_index].tasks[task_index].wantNewComment" (click)="displayCommentInput()">New comment</button>
-            <input type="text" id="commentInput" *ngIf="todoList[agenda_index].tasks[task_index].wantNewComment" 
-                    appClickedOutside (clickedOutside)="addComment(task_index, agenda_index)" [(ngModel)]="newComment">
+            <input type="text" id="commentInput" *ngIf="todoList[agenda_index].tasks[task_index].wantNewComment" [(ngModel)]="newComment" 
+                    appClickedOutside (clickedOutside)="addComment(task_index, agenda_index)" (keydown.enter)="addComment(task_index, agenda_index)">
         </ul>                       
     </app-side-container>    
 </body>

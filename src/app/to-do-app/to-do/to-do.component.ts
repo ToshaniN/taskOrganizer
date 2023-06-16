@@ -302,6 +302,9 @@ export class ToDoComponent implements OnInit {
         }
       });
     this.details.openContainer();
+    this.copyTask(taskIndex, agendaIndex)    //if task is already copied: fields except for description will get updated in next line
+    this.updateTask(taskIndex, agendaIndex)  //    if task had not been previously copied --> nothing to update --> update api will not be called
+    this.copyTask(taskIndex, agendaIndex)    //copying task again since clicking anywhere on sidecontainer will make task row lose focus --> clickedOutside triggered --> update api again
   }
   //......................................................................
 
