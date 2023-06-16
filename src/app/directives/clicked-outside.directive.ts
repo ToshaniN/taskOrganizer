@@ -1,4 +1,4 @@
-import {Directive, ElementRef, Output, EventEmitter, HostListener, Input} from '@angular/core';
+import { Directive, ElementRef, Output, EventEmitter, HostListener } from '@angular/core';
 
 @Directive({
   selector: '[appClickedOutside]'
@@ -8,25 +8,10 @@ export class ClickedOutsideDirective {
 
   insideRow = false
   constructor(private elementRef: ElementRef) { }
-
   @Output() public clickedOutside = new EventEmitter();
-  // @Input() set appClickedOutside(inFocus) {
-  //   console.log("INSIDE INPUT")
-  //   if (!inFocus) {
-  //     return;
-  //   }
-  // }
 
   @HostListener('document:click', ['$event.target'])
   public onClick(targetElement: any) {
-    // let target = document.getElementById(id)
-    // if (targetElement.name == "rows") {
-    //   const clickedInside = this.elementRef.nativeElement.contains(target);
-    //   if (!clickedInside) {
-    //     this.clickedOutside.emit(true);
-    //   }
-    // }
-    //console.log("id: " + id) //empty unless <td> element
     if (targetElement.name == "addTask" || targetElement.name == "addNewComment") {
       return;
     }
@@ -40,5 +25,3 @@ export class ClickedOutsideDirective {
     }
   }
 }
-
-// .................................................................................

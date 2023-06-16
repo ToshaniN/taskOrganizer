@@ -44,11 +44,6 @@ textarea {
 
 
 /* ID Specific */
-/* #taskList {
-    margin-left: 20px;
-    padding-left: 20px;
-} */
-
 #AName, #AStatus {
     display: inline-block;
     margin-bottom: 0px;

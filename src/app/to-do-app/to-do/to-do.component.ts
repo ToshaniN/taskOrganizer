@@ -13,92 +13,34 @@ export class ToDoComponent implements OnInit {
 
   newTaskForm: FormGroup;
   wantNewAgenda = false;
-  // previousValues = [];
   agendaFieldCopy = {"name":"",
                      "agenda_status":""};
-  agendaCopied = false;
-
   taskFieldCopy = {"title":"",
                    "due_date":null,
                    "priority":null,
                    "task_status":"",
                    "description":"" }
+                   commentFieldCopy = {"comment_text":""}
+  agendaCopied = false;
   taskCopied = false
-  
-  commentFieldCopy = {"comment_text":""}
 
-  todoList = [
-    // { "id":1,
-    //   "name": "Agenda1",
-    //   "status": "Not started",
-    //   "tasks" : [
-    //     { "id":1,
-    //       "title": "Task1",
-    //       "dueDate": "2023-06-14",
-    //       "priority": 2,
-    //       "status": "Open",
-    //       "description": "first task in the agenda",
-    //       "comments": [
-    //         {
-    //           "comment_text": "this needs to be done soon"
-    //         },
-    //         {
-    //           "comment_text": "start working on this next week"
-    //         }
-    //       ],
-    //       "wantNewComment": false
-    //     },
-    //     { "id":2,
-    //       "title": "Task2",
-    //       "dueDate": "2023-06-28",
-    //       "priority": 1,
-    //       "status": "Open",
-    //       "description": "second task in the agenda",
-    //       "comments": [
-    //         {
-    //           "comment_text": "finish Task1 prior to this"
-    //         }
-    //       ],
-    //       "wantNewComment": false
-    //     }
-    //   ],
-    //   "wantNewTask": false      
-    // },
-    // { "id":2,
-    //   "name": "Agenda2",
-    //   "status": "On track",
-    //   "tasks" : [
-    //     { "id":3,
-    //       "title": "Task3",
-    //       "dueDate": "2023-06-29",
-    //       "priority": 2,
-    //       "status": "Ready for QA",
-    //       "description": "third task in the agenda",
-    //       "comments": [
-    //         {
-    //           "comment_text": "QA team has started working on this, please change status"
-    //         }
-    //       ],
-    //       "wantNewComment": false
-    //     },
-    //     { "id":4,
-    //       "title": "Task4",
-    //       "dueDate": "2023-07-05",
-    //       "priority": 3,
-    //       "status": "Done",
-    //       "description": "fourth task in the agenda",
-    //       "comments": [
-    //         {
-    //           "comment_text": "Please assign a technical writer to update the documentation"
-    //         }
-    //       ],
-    //       "wantNewComment": false
-    //     }
-    //   ],
-    //   "wantNewTask": false      
-    // }
-  ];
-
+  todoList = [{"id": null,
+               "name": "",
+               "agenda_status": "",
+               "tasks": [
+                  {
+                      "id": null,
+                      "task2agenda": null,
+                      "title": "",
+                      "due_date": null,
+                      "priority": null,
+                      "task_status": "",
+                      "description": "",
+                      "wantNewComment": false
+                  }
+                ],
+                "wantNewTask": false
+              }];  
   comments = [];
 
   agendaStatusOptions = [
@@ -198,8 +140,6 @@ export class ToDoComponent implements OnInit {
           alert("An error occurred")
         }
       });
-
-      // this.previousValues = JSON.parse(JSON.stringify(this.todoList))
   }
 
   //GET methods
@@ -272,11 +212,8 @@ export class ToDoComponent implements OnInit {
     this.taskCopied = true
   }
   
-  updateTask(event, taskIndex, agendaIndex) {
+  updateTask(taskIndex, agendaIndex) {
     console.log("Updating task")
-    // if (event.target.id == 'deleteTaskButton' || event.target.id == 'detailsButton') {
-    //     return
-    // }
     let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id}
     for (let key in this.taskFieldCopy) {
       if (key == 'title' && this.todoList[agendaIndex].tasks[taskIndex][key] == '') {
@@ -293,7 +230,6 @@ export class ToDoComponent implements OnInit {
       return
     }
     console.log(JSON.stringify(payload))
-
     let errorOccurred = false
     this.flask.updateTask(payload)
     .subscribe({
@@ -507,11 +443,8 @@ export class ToDoComponent implements OnInit {
   }
 
 
-  updateAgenda(event, agendaIndex) {
+  updateAgenda(agendaIndex) {
     console.log("Updating agenda")
-    // if (event.target.id == 'deleteAgendaButton') {
-    //     return
-    // }
     let payload = {"id":this.todoList[agendaIndex].id}
     for (let key in this.agendaFieldCopy) {
       if (key == 'name' && this.todoList[agendaIndex][key] == '') {
@@ -577,12 +510,8 @@ export class ToDoComponent implements OnInit {
     }
   }
 
-  //......................................................................
-
-  // tableRowClick(event, taskIndex, agendaIndex) {
-  //   console.log("clicked outside on: task index: "+ taskIndex + " agenda index: " + agendaIndex)
-  //   //console.log(this.titleFocus)
-  // }
-
-
+  agendaExists(agendaIndex) {
+    return this.todoList[agendaIndex] && this.todoList[agendaIndex].tasks
+  }
+  //.....................................................................
 }

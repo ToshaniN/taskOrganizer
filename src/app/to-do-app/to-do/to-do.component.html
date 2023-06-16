@@ -3,16 +3,14 @@
     <ul>
         <!--For each agenda-->
         <li *ngFor="let agenda of todoList;let agendaIndex = index;"> 
-            <div id="agendaHeader" appClickedOutside (clickedOutside)="updateAgenda($event, agendaIndex)">
+            <div id="agendaHeader" appClickedOutside (clickedOutside)="updateAgenda(agendaIndex)">
                 <h2 id="AName">
                     <input id="name" [(ngModel)]="agenda.name" (focus)="copyAgenda(agendaIndex)">
-                    <!-- {{ agenda.name }} -->
                 </h2> 
                 <h3 id="AStatus"> Status: 
                     <select id="agenda_status" [(ngModel)]="agenda.agenda_status" (focus)="copyAgenda(agendaIndex)">
                         <option *ngFor="let status of agendaStatusOptions">{{ status.name }}</option>
                     </select>
-                    <!-- {{ agenda.status }} -->
                 </h3> 
                 <button id="deleteAgendaButton" type="button" (click)="deleteAgenda(agendaIndex)">&#x2716;</button>
             </div>
@@ -30,7 +28,7 @@
                 </thead>
                 <tbody>
                     <tr [id]="'existingTask' + agendaIndex + ':' + taskIndex" name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" 
-                        appClickedOutside (clickedOutside)="updateTask($event, taskIndex, agendaIndex)"> <!-- (focusout)="updateTask($event, taskIndex, agendaIndex)" id="existingTask{{agendaIndex}}:{{taskIndex}}" -->
+                        appClickedOutside (clickedOutside)="updateTask(taskIndex, agendaIndex)">
                         <td><input id="title" [(ngModel)]="task.title" (focus)="copyTask(taskIndex, agendaIndex)"></td>
                         <td><input id="due_date" type="datetime-local" [(ngModel)]="task.due_date" (focus)="copyTask(taskIndex, agendaIndex)"></td>
                         <td>
@@ -48,16 +46,6 @@
                             <button id="detailsButton" type="button" (click)="openDetails(taskIndex, agendaIndex)">&#x2631;</button> <!--261A 2631 27B5 -->
                             <button id="deleteTaskButton" type="button" (click)="deleteTask(taskIndex, agendaIndex)">&#x2716;</button> <!-- 2716  274C-->
                         </td>
-                        <!-- <td>{{task.title}}</td>
-                        <td>{{task.dueDate}}</td>
-                        <td>{{task.priority}}</td>
-                        <td>{{task.status}}</td> -->
-                        <!-- <td>{{task.description}}</td> -->
-                        <!-- <td>
-                            <li *ngFor="let c of task.comments">
-                                {{c.comment_text}}
-                            </li>
-                        </td> -->
                     </tr>
                 </tbody>
             </table>
@@ -94,10 +82,10 @@
     <br><br>
 
     <!--Description and Comments-->
-    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="1">
+    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="1" *ngIf="agendaExists(agenda_index)">
         <h4>Description</h4>
         <textarea id="desText" [(ngModel)]="todoList[agenda_index].tasks[task_index].description" (focus)="copyTask(task_index, agenda_index)" 
-                  (focusout)="updateTask($event, task_index, agenda_index)"></textarea>
+                  (focusout)="updateTask(task_index, agenda_index)"></textarea>
         <h4>Comments</h4>
         <ul>
             <li *ngFor="let comment of comments; let commentIndex = index">
