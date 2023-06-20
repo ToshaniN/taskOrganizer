@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { FlaskApiService } from '../../flask-api.service';
@@ -36,10 +36,16 @@ export class ToDoComponent implements OnInit {
                       "priority": null,
                       "task_status": "",
                       "description": "",
-                      "wantNewComment": false
+                      "wantNewComment": false,
+                      "titleEditing": false,
+                      "dateEditing": false,
+                      "priorityEditing": false,
+                      "statusEditing": false
                   }
                 ],
-                "wantNewTask": false
+                "wantNewTask": false,
+                "nameEditing": false,
+                "aStatusEditing": false
               }];  
   comments = [];
 
@@ -306,6 +312,24 @@ export class ToDoComponent implements OnInit {
     this.updateTask(taskIndex, agendaIndex)  //    if task had not been previously copied --> nothing to update --> update api will not be called
     this.copyTask(taskIndex, agendaIndex)    //copying task again since clicking anywhere on sidecontainer will make task row lose focus --> clickedOutside triggered --> update api again
   }
+
+  showAndFocus(agendaIndex, taskIndex, field, id) {
+    this.todoList[agendaIndex].tasks[taskIndex][field] = true
+    console.log("Show and focus applied on -> field: " + field + " id: " + id)
+    setTimeout(() => {
+      document.getElementById(id).focus()});
+  }
+
+  tabToNext(tabPress,taskIndex, agendaIndex, nextField, nextFieldId) {
+    console.log("tab pressed")
+    tabPress.preventDefault()
+    if (taskIndex != -1) {
+      this.showAndFocus(agendaIndex, taskIndex, nextField, nextFieldId)
+    } else {
+      this.focusAFields(agendaIndex, nextField, nextFieldId)
+    }
+    
+  }
   //......................................................................
 
   // COMMENT METHODS .....................................................
@@ -515,6 +539,18 @@ export class ToDoComponent implements OnInit {
 
   agendaExists(agendaIndex) {
     return this.todoList[agendaIndex] && this.todoList[agendaIndex].tasks
+  }
+
+  focusAFields(agendaIndex, field, id) {
+    console.log("before changing: " + this.todoList[agendaIndex][field])
+    this.todoList[agendaIndex][field] = true
+    console.log("after changing: " + this.todoList[agendaIndex][field])
+    
+    console.log("field: " + field + " id: " + id)
+    setTimeout(() => {
+        document.getElementById(id).focus()
+      }
+    )
   }
   //.....................................................................
 }

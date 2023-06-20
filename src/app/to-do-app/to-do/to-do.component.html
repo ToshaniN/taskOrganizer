@@ -3,15 +3,24 @@
     <ul>
         <!--For each agenda-->
         <li *ngFor="let agenda of todoList;let agendaIndex = index;"> 
-            <div id="agendaHeader" appClickedOutside (clickedOutside)="updateAgenda(agendaIndex)">
-                <h2 id="AName">
-                    <input id="name" [(ngModel)]="agenda.name" (focus)="copyAgenda(agendaIndex)">
-                </h2> 
-                <h3 id="AStatus"> Status: 
-                    <select id="agenda_status" [(ngModel)]="agenda.agenda_status" (focus)="copyAgenda(agendaIndex)">
+            <div id="agendaHeader" appClickedOutside (clickedOutside)="updateAgenda(agendaIndex)" >
+                <div id="AName">
+                    <h2 (click)="focusAFields(agendaIndex, 'nameEditing', 'name'+agendaIndex)" [hidden]="agenda.nameEditing"> {{agenda.name}} </h2>
+                    <input #nameInput [id]="'name'+agendaIndex" [(ngModel)]="agenda.name" [hidden]="!agenda.nameEditing" 
+                            (blur)="agenda.nameEditing=false" (focus)="copyAgenda(agendaIndex)"
+                            (keydown.enter)="updateAgenda(agendaIndex); copyAgenda(agendaIndex); nameInput.blur()"
+                            (keydown.tab)="tabToNext($event, -1, agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex)">
+                </div>
+                <div id="AStatus"> 
+                    <h3 id="statusLabel">Status:</h3>
+                    <p id="statusVal" (click)="focusAFields(agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex);" [hidden]="agenda.aStatusEditing">{{agenda.agenda_status}}</p> 
+                    <select #aStatusinput [id]="'agenda_status'+agendaIndex" [(ngModel)]="agenda.agenda_status" [hidden]="!agenda.aStatusEditing" 
+                            (blur)="agenda.aStatusEditing=false"  (focus)="copyAgenda(agendaIndex)"
+                            (keydown.enter)="updateAgenda(agendaIndex); copyAgenda(agendaIndex); aStatusinput.blur()"
+                            (keydown.tab)="tabToNext($event, -1, agendaIndex, 'nameEditing', 'name'+agendaIndex)">
                         <option *ngFor="let status of agendaStatusOptions">{{ status.name }}</option>
                     </select>
-                </h3> 
+                </div>
                 <button id="deleteAgendaButton" type="button" (click)="deleteAgenda(agendaIndex)">&#x2716;</button>
             </div>
             <h3 id="tasksHeading">Tasks</h3>
@@ -27,18 +36,37 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr [id]="'existingTask' + agendaIndex + ':' + taskIndex" name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" 
-                        appClickedOutside (clickedOutside)="updateTask(taskIndex, agendaIndex)">
-                        <td><input id="title" [(ngModel)]="task.title" (focus)="copyTask(taskIndex, agendaIndex)"></td>
-                        <td><input id="due_date" type="datetime-local" [(ngModel)]="task.due_date" (focus)="copyTask(taskIndex, agendaIndex)"></td>
+                    <tr name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" appClickedOutside (clickedOutside)="updateTask(taskIndex, agendaIndex)">
                         <td>
-                            <select id="priority" [(ngModel)]="task.priority" (focus)="copyTask(taskIndex, agendaIndex)">
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)" [hidden]="task.titleEditing">{{task.title}}</p>
+                            <input #titleInput [id]="'title_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.title" [hidden]="!task.titleEditing" 
+                                    (blur)="task.titleEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="updateTask(taskIndex, agendaIndex); copyTask(taskIndex, agendaIndex); titleInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)">
+                        </td>
+                        <td>
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)" [hidden]="task.dateEditing">{{task.due_date}}</p>
+                            <input #dateInput [id]="'due_date_'+agendaIndex+'_'+taskIndex" type="datetime-local" [(ngModel)]="task.due_date" [hidden]="!task.dateEditing" 
+                                    (blur)="task.dateEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="updateTask(taskIndex, agendaIndex); copyTask(taskIndex, agendaIndex); dateInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)">
+                        </td>
+                        <td>
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)" [hidden]="task.priorityEditing">{{task.priority}}</p>
+                            <select #priorInput [id]="'priority_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.priority" [hidden]="!task.priorityEditing" 
+                                    (blur)="task.priorityEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="updateTask(taskIndex, agendaIndex); copyTask(taskIndex, agendaIndex); priorInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)">
                                 <option value="" disabled selected>Priority</option>
                                 <option *ngFor="let p of priorityOptions">{{ p.name }}</option>
                             </select> 
                         </td>
                         <td>
-                            <select id="task_status" [(ngModel)]="task.task_status" (focus)="copyTask(taskIndex, agendaIndex)">
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)" [hidden]="task.statusEditing">{{task.task_status}}</p>
+                            <select #statusInput [id]="'task_status_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.task_status" [hidden]="!task.statusEditing" 
+                                    (blur)="task.statusEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="updateTask(taskIndex, agendaIndex); copyTask(taskIndex, agendaIndex); statusInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)">
                                 <option *ngFor="let s of taskStatusOptions">{{ s.name }}</option>
                             </select>    
                         </td>

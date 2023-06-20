@@ -8,6 +8,12 @@ td,th {
     padding-right: 25px;
 }
 
+table, th, td {
+    border-bottom: 2px solid;
+    border-collapse: collapse;
+    border-color: bisque;
+  }
+
 body {
     background-color:floralwhite;
     font-family: Cambria, Cochin;
@@ -42,12 +48,31 @@ textarea {
     width: 300px;
 }
 
+input, p {
+    margin: 0;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+p:hover, #AName h2:hover {
+    background-color: rgb(138, 207, 209);
+    border-radius: 5px;
+}
 
 /* ID Specific */
 #AName, #AStatus {
     display: inline-block;
     margin-bottom: 0px;
-    width: 500px;
+    width: 450px;
+}
+
+#AName h2, #AName input {
+    margin: 0;
+    padding: 0;
+}
+
+#statusLabel, #statusVal {
+    display: inline-block;
+    margin-bottom: 0;
 }
 
 #agendaHeader {
