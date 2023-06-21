@@ -22,6 +22,7 @@ export class ClickedOutsideDirective {
     } else if (!clickedInside && this.insideRow) {  // click occurred outside the row, and since insideRow was true, it means the row's input element lost focus
       this.clickedOutside.emit(true);              //  event will only be emmited if an input textbox was once in focus in the row, and now a click has occurred outside 
       this.insideRow = false
+      console.log("Clicked outside emitted")
     }
   }
 }

@@ -71,7 +71,7 @@ p:hover, #AName h2:hover {
 }
 
 #statusLabel, #statusVal {
-    display: inline-block;
+    /* display: inline-block; */
     margin-bottom: 0;
 }
 

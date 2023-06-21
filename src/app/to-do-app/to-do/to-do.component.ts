@@ -1,7 +1,10 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { FlaskApiService } from '../../flask-api.service';
+// import { debounce } from 'lodash'
+import { Observable, Subscription, fromEvent, interval} from 'rxjs'
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators'
 
 @Component({
   selector: 'app-to-do',
@@ -9,7 +12,7 @@ import { FlaskApiService } from '../../flask-api.service';
   styleUrls: ['./to-do.component.css']
 })
 
-export class ToDoComponent implements OnInit {
+export class ToDoComponent implements OnInit, OnDestroy {
 
   newTaskForm: FormGroup;
   wantNewAgenda = false;
@@ -125,7 +128,13 @@ export class ToDoComponent implements OnInit {
   task_index = 0;
   newComment="";
 
-  constructor(private fb:FormBuilder, private flask:FlaskApiService) { }
+  agendaInactivityTime:any
+  taskInactivityTime:any
+  typing:Subscription
+
+  constructor(private fb:FormBuilder, private flask:FlaskApiService) { 
+  // this.updateAgendaOnKeyup = debounce(this.updateAgendaOnKeyup, 1500)
+  }
 
   ngOnInit() {
     this.newTaskForm = this.fb.group({
@@ -145,9 +154,15 @@ export class ToDoComponent implements OnInit {
           console.error(err)
           alert("An error occurred")
         }
-      });
+      });      
   }
 
+  ngOnDestroy() {
+    if (this.typing) {
+      this.typing.unsubscribe();
+    }
+  }
+  
   //GET methods
   get newTitle() {
     return this.newTaskForm.get('newTitle');
@@ -320,15 +335,26 @@ export class ToDoComponent implements OnInit {
       document.getElementById(id).focus()});
   }
 
-  tabToNext(tabPress,taskIndex, agendaIndex, nextField, nextFieldId) {
+  tabToNext(tabPress, taskIndex, agendaIndex, nextField, nextFieldId) {
     console.log("tab pressed")
     tabPress.preventDefault()
     if (taskIndex != -1) {
+      this.updateTask(taskIndex, agendaIndex)
+      this.copyTask(taskIndex, agendaIndex)
       this.showAndFocus(agendaIndex, taskIndex, nextField, nextFieldId)
     } else {
+      this.updateAgenda(agendaIndex)
+      this.copyAgenda(agendaIndex)
       this.focusAFields(agendaIndex, nextField, nextFieldId)
     }
-    
+  }
+
+  updateTaskOnInactivity(taskIndex, agendaIndex) {
+    clearTimeout(this.taskInactivityTime)
+    this.taskInactivityTime = setTimeout(() => {
+      this.updateTask(taskIndex, agendaIndex)
+      this.copyTask(taskIndex, agendaIndex)
+    }, 2000)
   }
   //......................................................................
 
@@ -542,15 +568,52 @@ export class ToDoComponent implements OnInit {
   }
 
   focusAFields(agendaIndex, field, id) {
-    console.log("before changing: " + this.todoList[agendaIndex][field])
+    // console.log("before changing: " + this.todoList[agendaIndex][field])
     this.todoList[agendaIndex][field] = true
-    console.log("after changing: " + this.todoList[agendaIndex][field])
-    
-    console.log("field: " + field + " id: " + id)
+    // console.log("after changing: " + this.todoList[agendaIndex][field])
+    console.log("Show and focus on field: " + field + " id: " + id)
     setTimeout(() => {
         document.getElementById(id).focus()
       }
     )
   }
+
+  updateAgendaOnInactivity(agendaIndex) {
+    clearTimeout(this.agendaInactivityTime)
+    this.agendaInactivityTime = setTimeout(() => {
+      this.updateAgenda(agendaIndex)
+      this.copyAgenda(agendaIndex)
+    }, 1500)
+  }
+
+  // updateAgendaOnKeyup(agendaIndex) {
+  //   this.updateAgenda(agendaIndex)
+  //   this.copyAgenda(agendaIndex)
+  // }  
+
+  
+  updateAgendaWhileTyping(agendaIndex, id) {
+    console.log("while typing called")
+    let keyUp$: Observable<any> = fromEvent(document.getElementById(id), 'keyup').pipe(
+      debounceTime(1500),
+      distinctUntilChanged()
+    )
+    keyUp$.subscribe(()=> {
+      console.log("in keyup sub")
+      this.updateAgenda(agendaIndex)
+      this.copyAgenda(agendaIndex)
+    })
+
+    // if (this.typing) {
+    //   this.typing.unsubscribe()
+    // }
+    // this.typing = interval(2000)
+    // .subscribe(()=> {
+    //   console.log("in keyup sub")
+    //   this.updateAgenda(agendaIndex)
+    //   this.copyAgenda(agendaIndex)
+    // })
+  }
+
   //.....................................................................
 }
