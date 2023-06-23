@@ -1,10 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { FlaskApiService } from '../../flask-api.service';
-// import { debounce } from 'lodash'
-import { Observable, Subscription, fromEvent, interval} from 'rxjs'
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators'
 
 @Component({
   selector: 'app-to-do',
@@ -12,7 +9,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators'
   styleUrls: ['./to-do.component.css']
 })
 
-export class ToDoComponent implements OnInit, OnDestroy {
+export class ToDoComponent implements OnInit {
 
   newTaskForm: FormGroup;
   wantNewAgenda = false;
@@ -23,10 +20,10 @@ export class ToDoComponent implements OnInit, OnDestroy {
                    "priority":null,
                    "task_status":"",
                    "description":"" }
-                   commentFieldCopy = {"comment_text":""}
+  commentFieldCopy = {"comment_text":""}
   agendaCopied = false;
   taskCopied = false
-
+  comments = [];
   todoList = [{"id": null,
                "name": "",
                "agenda_status": "",
@@ -43,14 +40,14 @@ export class ToDoComponent implements OnInit, OnDestroy {
                       "titleEditing": false,
                       "dateEditing": false,
                       "priorityEditing": false,
-                      "statusEditing": false
+                      "statusEditing": false,
                   }
                 ],
                 "wantNewTask": false,
                 "nameEditing": false,
-                "aStatusEditing": false
+                "aStatusEditing": false,
               }];  
-  comments = [];
+  
 
   agendaStatusOptions = [
     {
@@ -130,11 +127,8 @@ export class ToDoComponent implements OnInit, OnDestroy {
 
   agendaInactivityTime:any
   taskInactivityTime:any
-  typing:Subscription
 
-  constructor(private fb:FormBuilder, private flask:FlaskApiService) { 
-  // this.updateAgendaOnKeyup = debounce(this.updateAgendaOnKeyup, 1500)
-  }
+  constructor(private fb:FormBuilder, private flask:FlaskApiService) { }
 
   ngOnInit() {
     this.newTaskForm = this.fb.group({
@@ -155,12 +149,6 @@ export class ToDoComponent implements OnInit, OnDestroy {
           alert("An error occurred")
         }
       });      
-  }
-
-  ngOnDestroy() {
-    if (this.typing) {
-      this.typing.unsubscribe();
-    }
   }
   
   //GET methods
@@ -349,7 +337,27 @@ export class ToDoComponent implements OnInit, OnDestroy {
     }
   }
 
+  onTaskEnter(taskIndex, agendaIndex) {
+    this.updateTask(taskIndex, agendaIndex)
+    this.copyTask(taskIndex, agendaIndex)
+  }
+
+  onTaskKeyup(taskIndex, agendaIndex) {
+    this.updateTaskWhileTyping(taskIndex, agendaIndex)
+    this.updateTaskOnInactivity(taskIndex, agendaIndex)
+  }
+
+  updateTaskWhileTyping(taskIndex, agendaIndex) {
+    console.log("while typing called")
+    setTimeout(() => {
+      console.log("CALLED FUNCS WHILE TYPING")
+      this.updateTask(taskIndex, agendaIndex)
+      this.copyTask(taskIndex, agendaIndex)
+      }, 3000)
+  } 
+
   updateTaskOnInactivity(taskIndex, agendaIndex) {
+    console.log("On inactivity called")
     clearTimeout(this.taskInactivityTime)
     this.taskInactivityTime = setTimeout(() => {
       this.updateTask(taskIndex, agendaIndex)
@@ -568,14 +576,22 @@ export class ToDoComponent implements OnInit, OnDestroy {
   }
 
   focusAFields(agendaIndex, field, id) {
-    // console.log("before changing: " + this.todoList[agendaIndex][field])
     this.todoList[agendaIndex][field] = true
-    // console.log("after changing: " + this.todoList[agendaIndex][field])
     console.log("Show and focus on field: " + field + " id: " + id)
     setTimeout(() => {
         document.getElementById(id).focus()
       }
     )
+  }
+
+  onEnter(agendaIndex) {
+    this.updateAgenda(agendaIndex)
+    this.copyAgenda(agendaIndex)
+  }
+
+  onKeyup(agendaIndex) {
+    this.updateAgendaWhileTyping(agendaIndex)
+    this.updateAgendaOnInactivity(agendaIndex)
   }
 
   updateAgendaOnInactivity(agendaIndex) {
@@ -585,34 +601,14 @@ export class ToDoComponent implements OnInit, OnDestroy {
       this.copyAgenda(agendaIndex)
     }, 1500)
   }
-
-  // updateAgendaOnKeyup(agendaIndex) {
-  //   this.updateAgenda(agendaIndex)
-  //   this.copyAgenda(agendaIndex)
-  // }  
-
   
-  updateAgendaWhileTyping(agendaIndex, id) {
+  updateAgendaWhileTyping(agendaIndex) {
     console.log("while typing called")
-    let keyUp$: Observable<any> = fromEvent(document.getElementById(id), 'keyup').pipe(
-      debounceTime(1500),
-      distinctUntilChanged()
-    )
-    keyUp$.subscribe(()=> {
-      console.log("in keyup sub")
+    setTimeout(() => {
+      console.log("CALLED FUNCS WHILE TYPING")
       this.updateAgenda(agendaIndex)
       this.copyAgenda(agendaIndex)
-    })
-
-    // if (this.typing) {
-    //   this.typing.unsubscribe()
-    // }
-    // this.typing = interval(2000)
-    // .subscribe(()=> {
-    //   console.log("in keyup sub")
-    //   this.updateAgenda(agendaIndex)
-    //   this.copyAgenda(agendaIndex)
-    // })
+    }, 3000)
   }
 
   //.....................................................................
