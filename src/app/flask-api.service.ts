@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { EnvService } from './env.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FlaskApiService {
-  baseUrl:string = "http://localhost:5000/";
-
-  constructor(private httpClient : HttpClient) { }
+  constructor(private httpClient : HttpClient, private env: EnvService) { }
+  baseUrl:string = this.env.apiUrl;
 
   // TASK CRUD ...........................................................
   public createTask(details:any): Observable<any> {

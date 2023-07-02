@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { FlaskApiService } from '../../flask-api.service';
+import { SocketService } from '../../socket.service';
 
 @Component({
   selector: 'app-to-do',
@@ -128,7 +129,7 @@ export class ToDoComponent implements OnInit {
   agendaInactivityTime:any
   taskInactivityTime:any
 
-  constructor(private fb:FormBuilder, private flask:FlaskApiService) { }
+  constructor(private fb:FormBuilder, private flask:FlaskApiService, private socket:SocketService) { }
 
   ngOnInit() {
     this.newTaskForm = this.fb.group({
@@ -195,6 +196,11 @@ export class ToDoComponent implements OnInit {
             console.log("Success: " + JSON.stringify(data))
             this.todoList[agendaIndex].tasks.push(data['datarec'])
             console.log("pushed datarec")
+            /////////
+            this.socket.taskCreate(data['datarec']).subscribe(fromSocket => {
+              console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
+            });
+            ////////
           } else {
             console.log("Failure: " + JSON.stringify(data))
           }
@@ -477,6 +483,11 @@ export class ToDoComponent implements OnInit {
           if (data['errCode'] == 0) {
             console.log("Success: " + JSON.stringify(data))
             this.todoList.push(data['datarec'])
+            ///////
+            this.socket.agendaCreate(data['datarec']).subscribe(fromSocket => {
+              console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
+            });
+            ///////
           } else {
             console.log("Failure: " + JSON.stringify(data))
           }
