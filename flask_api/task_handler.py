@@ -4,12 +4,15 @@ from makeResponse import MakeResponse
 
 class TaskHandler:
     def createNewTask(receivedInfo):
+        print("made it to createTask in handler")
         newTask = tasks(task_status="Open", status="Active")
         for key in receivedInfo:
             setattr(newTask, key, receivedInfo[key])
+        print("looped through")
         try:
             session.add(newTask)
             session.commit()
+            print("committed changes")
         except Exception as err:
             session.rollback()
             response = {"errCode" : 2, "errMsg" : str(err)}
@@ -20,6 +23,8 @@ class TaskHandler:
             datarec = MakeResponse.createResponse(justAdded)
             response = {"errCode":0,
                         "datarec": datarec}
+            print("response formed")
+        print(response)
         return response
     
 

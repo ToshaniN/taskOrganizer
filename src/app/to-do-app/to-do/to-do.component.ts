@@ -184,25 +184,27 @@ export class ToDoComponent implements OnInit {
     console.log("focus out")
     if (this.newTitle.valid) {
       let jsonNewTask = {
+        "type": 'newTask',
         "task2agenda": this.todoList[agendaIndex].id,
         "title": this.newTitle.value,
         ...(this.newDate.valid && {due_date: this.newDate.value}),
         ...(this.newPriority.valid && {priority: this.newPriority.value})  
       }
-      this.flask.createTask(jsonNewTask)
-      .subscribe({
-        next: (data) => {
-          if (data['errCode'] == 0) {
-            console.log("Success: " + JSON.stringify(data))
-            this.todoList[agendaIndex].tasks.push(data['datarec'])
-            console.log("pushed datarec")
-            /////////
-            this.socket.taskCreate(data['datarec']).subscribe(fromSocket => {
-              console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
-            });
-            ////////
-          } else {
-            console.log("Failure: " + JSON.stringify(data))
+      //////////////////////////
+      console.log("event should be emitted here")
+      this.socket.dataIn(jsonNewTask)
+      console.log("event emitted and back in component")
+      this.socket.evtResultObs.subscribe({
+        next: (fromSocket) => {
+          console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
+          if (fromSocket['type'] == 'taskAdded') {
+            if (fromSocket['errCode'] == 0) {
+              console.log("Success: " + JSON.stringify(fromSocket))
+              this.todoList[agendaIndex].tasks.push(fromSocket['datarec'])
+              console.log("pushed datarec")
+            } else {
+              console.log("Failure: " + JSON.stringify(fromSocket))
+            }
           }
         },
         error: (err) => {
@@ -210,6 +212,23 @@ export class ToDoComponent implements OnInit {
           alert("An error occurred")
         }
       });
+      //////////////////////////
+      // this.flask.createTask(jsonNewTask)
+      // .subscribe({
+      //   next: (data) => {
+      //     if (data['errCode'] == 0) {
+      //       console.log("Success: " + JSON.stringify(data))
+      //       this.todoList[agendaIndex].tasks.push(data['datarec'])
+      //       console.log("pushed datarec")
+      //     } else {
+      //       console.log("Failure: " + JSON.stringify(data))
+      //     }
+      //   },
+      //   error: (err) => {
+      //     console.error(err)
+      //     alert("An error occurred")
+      //   }
+      // });
     }
     this.resetTaskInputs();
     this.todoList[agendaIndex].wantNewTask = false;
@@ -229,7 +248,8 @@ export class ToDoComponent implements OnInit {
   
   updateTask(taskIndex, agendaIndex) {
     console.log("Updating task")
-    let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id}
+    let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id, 
+                   "type": 'updateTask'}
     for (let key in this.taskFieldCopy) {
       if (key == 'title' && this.todoList[agendaIndex].tasks[taskIndex][key] == '') {
           alert("Please enter a title for the task")
@@ -246,14 +266,20 @@ export class ToDoComponent implements OnInit {
     }
     console.log(JSON.stringify(payload))
     let errorOccurred = false
-    this.flask.updateTask(payload)
-    .subscribe({
-      next: (data) => {
-        if (data['errCode'] == 0) {
-          console.log("Success: " + JSON.stringify(data))
-        } else {
-          console.log("Failure: " + JSON.stringify(data))
-          errorOccurred = true
+    /////////////////////////
+    console.log("event should be emitted here")
+    this.socket.dataIn(payload)
+    console.log("event emitted and back in component")
+    this.socket.evtResultObs.subscribe({
+      next: (fromSocket) => {
+        console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
+        if (fromSocket['type'] == 'taskUpdated') {
+          if (fromSocket['errCode'] == 0) {
+            console.log("Success: " + JSON.stringify(fromSocket))
+          } else {
+            console.log("Failure: " + JSON.stringify(fromSocket))
+            errorOccurred = true
+          }
         }
       },
       error: (err) => {
@@ -262,6 +288,23 @@ export class ToDoComponent implements OnInit {
         alert("An error occurred")
       }
     });
+    /////////////////////////
+    // this.flask.updateTask(payload)
+    // .subscribe({
+    //   next: (data) => {
+    //     if (data['errCode'] == 0) {
+    //       console.log("Success: " + JSON.stringify(data))
+    //     } else {
+    //       console.log("Failure: " + JSON.stringify(data))
+    //       errorOccurred = true
+    //     }
+    //   },
+    //   error: (err) => {
+    //     console.error(err)
+    //     errorOccurred = true
+    //     alert("An error occurred")
+    //   }
+    // });
     if (errorOccurred) { //return edits to previous value
       for (let key in this.taskFieldCopy) {
         this.todoList[agendaIndex].tasks[taskIndex][key] = this.taskFieldCopy[key]
@@ -275,24 +318,47 @@ export class ToDoComponent implements OnInit {
     if (answer) {
       let id = this.todoList[agendaIndex].tasks[taskIndex].id
       console.log("deleting task")
-      let jsonPayload = {"id": id}
+      let jsonPayload = {"id": id, "type": 'deleteTask'}
       console.log(JSON.stringify(jsonPayload))
-      this.flask.deleteTask(jsonPayload)
-        .subscribe({
-          next: (data) => {
-            if (data['errCode'] == 0) {
+      /////////////////////////////////
+      console.log("event should be emitted here")
+      this.socket.dataIn(jsonPayload)
+      console.log("event emitted and back in component")
+      this.socket.evtResultObs.subscribe({
+        next: (fromSocket) => {
+          console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
+          if (fromSocket['type'] == 'taskDeleted') {
+            if (fromSocket['errCode'] == 0) {
               //hide inputs
               this.todoList[agendaIndex].tasks.splice(taskIndex,1)
-              console.log("Success: " + JSON.stringify(data))
+              console.log("Success: " + JSON.stringify(fromSocket))
             } else {
-              console.log("Failure: " + JSON.stringify(data))
+              console.log("Failure: " + JSON.stringify(fromSocket))
             }
-          },
-          error: (err) => {
-            console.error(err)
-            alert("An error occurred")
           }
-        });
+        },
+        error: (err) => {
+          console.error(err)
+          alert("An error occurred")
+        }
+      });
+      /////////////////////////////////
+      // this.flask.deleteTask(jsonPayload)
+      //   .subscribe({
+      //     next: (data) => {
+      //       if (data['errCode'] == 0) {
+      //         //hide inputs
+      //         this.todoList[agendaIndex].tasks.splice(taskIndex,1)
+      //         console.log("Success: " + JSON.stringify(data))
+      //       } else {
+      //         console.log("Failure: " + JSON.stringify(data))
+      //       }
+      //     },
+      //     error: (err) => {
+      //       console.error(err)
+      //       alert("An error occurred")
+      //     }
+      //   });
     }    
   }
 
@@ -484,7 +550,11 @@ export class ToDoComponent implements OnInit {
             console.log("Success: " + JSON.stringify(data))
             this.todoList.push(data['datarec'])
             ///////
-            this.socket.agendaCreate(data['datarec']).subscribe(fromSocket => {
+            // this.socket.agendaCreate(data['datarec']).subscribe(fromSocket => {
+            //   console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
+            // });
+            this.socket.dataIn(data['datarec'])
+            this.socket.evtResultObs.subscribe(fromSocket => {
               console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
             });
             ///////

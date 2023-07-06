@@ -40,7 +40,12 @@ class AgendaDelete(Resource):
 # '/task/create'
 class TaskCreate(Resource):
     def post(self):
-        receivedInfo = request.get_json()                        
+        print("made it to the post method in resource")
+        receivedInfo = request.get_json()
+        response = TaskHandler.createNewTask(receivedInfo)
+        print("response recieved:" + response)
+        # print(TaskHandler.createNewTask(receivedInfo))  
+        return response                      
         return TaskHandler.createNewTask(receivedInfo)
     
 # '/task/update'
