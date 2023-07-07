@@ -7,7 +7,6 @@ class SocketRoutes:
     socketio.on_event('connect', SocketHandler.connected)
     socketio.on_event('disconnect', SocketHandler.disconnected)
     socketio.on_error(SocketHandler.error_handler)
-
     socketio.on_event('dataIn', SocketEvtRedirect.redirect)
 
     #Task CRUD
@@ -16,6 +15,6 @@ class SocketRoutes:
     # socketio.on_event('deleteTask', SocketHandler.deleteTask)
 
     #Agenda CRUD
-    socketio.on_event('newAgenda', SocketHandler.createAgenda)
+    # socketio.on_event('newAgenda', SocketHandler.createAgenda)
 
     

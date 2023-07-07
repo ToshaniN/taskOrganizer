@@ -43,7 +43,7 @@ class TaskCreate(Resource):
         print("made it to the post method in resource")
         receivedInfo = request.get_json()
         response = TaskHandler.createNewTask(receivedInfo)
-        print("response recieved:" + response)
+        print("response recieved:" + str(response))
         # print(TaskHandler.createNewTask(receivedInfo))  
         return response                      
         return TaskHandler.createNewTask(receivedInfo)

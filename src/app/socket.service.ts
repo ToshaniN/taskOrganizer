@@ -12,10 +12,9 @@ export class SocketService {
   io:Socket;
   evtResult: Subject<any> = new Subject<any>()
   evtResultObs = this.evtResult.asObservable();
-  events = ['connect', 'disconnect', 'error', 'dataOut'] // 'taskAdded', 'taskUpdated', 'taskDeleted', 'agendaAdded'] 
+  events = ['connect', 'disconnect', 'error', 'dataOut']  
 
   constructor(private env: EnvService) { 
-    // this.socket.io.connect(this.env.socketUrl)
     this.io =  io(this.env.socketUrl)
     this.checkEvents()
   }
@@ -29,17 +28,24 @@ export class SocketService {
 
   dataOut(eventName) {
     console.log('Listening for: ' + eventName)
-    this.io.on(eventName, (data) => {
+    this.io.on(eventName, (data, callback) => {
       console.log("event occurred: " + eventName)
       this.eventActions[eventName](data)
       this.evtResult.next(data)
+      if (eventName != 'connect' && eventName != 'disconnect') {
+        callback("Client has recieved the event")
+      }
     })
   }
 
   dataIn(payload) {
-    // console.log("going to emit event")
-    this.io.emit('dataIn', payload)
-    console.log("event emitted to server")
+    return new Promise((resolve) => {
+      this.io.emit('dataIn', payload, (response) => {
+        console.log("response received from server" + JSON.stringify(response))
+        console.log("event emitted to server. Returning acknowledgement")
+        resolve(response)
+      })
+    })
   }
 
   eventActions = {
@@ -55,40 +61,5 @@ export class SocketService {
     'dataOut': (data) => {
       console.log("Data from socket --> received in service:" + JSON.stringify(data))
     }
-    // 'taskAdded': (data) => {
-    //   console.log("Data from socket --> received in service:" + JSON.stringify(data))
-    // },
-    // 'taskUpdated': (data) => {
-    //   console.log("Data from socket --> received in service:" + JSON.stringify(data))
-    // },
-    // 'taskDeleted': (data) => {
-    //   console.log("Data from socket --> received in service:" + JSON.stringify(data))
-    // },
-    // 'agendaAdded': (data) => {
-    //   console.log("Data from socket --> received in service:" + JSON.stringify(data))
-    // }
-  }
-
-
-  // public taskCreate(datarec): Observable<any> {
-  //   let newTask: Subject<any> = new Subject<any>()
-  //   this.socket.emit('newTask', datarec)
-  //   this.socket.on('taskAdded', (data) => {
-  //     console.log("Data from socket --> received in service:" + JSON.stringify(data))
-  //     newTask.next(data)
-  //   });
-  //   return newTask.asObservable();
-  // }
-
-  // public agendaCreate(datarec): Observable<any> {
-  //   let newAgenda: Subject<any> = new Subject<any>()
-  //   this.socket.emit('newAgenda', datarec)
-  //   this.socket.on('agendaAdded', (data) => {
-  //     console.log("Data from socket --> received in service:" + JSON.stringify(data))
-  //     newAgenda.next(data)
-  //   });
-  //   return newAgenda.asObservable();
-  // }
-
-  
+  }  
 }

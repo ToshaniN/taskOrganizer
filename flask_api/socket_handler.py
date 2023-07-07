@@ -18,36 +18,50 @@ class SocketHandler:
     # .................................................................
 
     # Task CRUD........................................................
+    # def createTask(payload):
+    #     print("Made it to createTask")
+    #     url = 'http://localhost:5000/task/create'
+    #     # response = requests.post(url, json=payload)
+    #     # response = httpx.get('https://api.sampleapis.com/avatar/info')
+    #     response = httpx.post(url, json=payload)
+    #     print("back here")
+    #     print(response.status_code)
+    #     print(response)
+    #     print(response.json())
+    #     resJson = response.json()
+    #     resJson['type'] = 'taskAdded'
+    #     emit('dataOut', resJson, broadcast=True)
+
+    def ack(message):
+        print(message)
+
     def createTask(payload):
         print("Made it to createTask")
-        url = 'http://127.0.0.1:5000/task/create'
-        # response = requests.post(url, json=payload)  #url, json=payload
-        response = httpx.post(url, json=payload)
-        print("back here")
-        print(response.status_code)
-        print(response)
-        print(response.json())
-        resJson = response.json()
-        resJson['type'] = 'taskAdded'
-        emit('dataOut', response.json(), broadcast=True)
-        # response = TaskHandler.createNewTask(payload)
-        # response['type'] = 'taskAdded' 
-        # print("New task added")
-        # emit('dataOut', response, broadcast=True)
+        response = TaskHandler.createNewTask(payload)
+        response['type'] = 'taskAdded' 
+        print("New task added")
+        # emit('dataOut', response, callback=SocketHandler.ack)
+        emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)  # , include_self=False
+        # return {'type': response['type'], 'id': response['datarec']['id']}
+        return response
 
     def updateTask(payload):
         print("Made it to update task")
         response = TaskHandler.updateTask(payload)
         response['type'] = 'taskUpdated'
         print("Task updated")
-        emit('dataOut', response, broadcast=True)
+        emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
+        # return {'type': response['type'], 'id': response['datarec']['id']}
+        return response
 
     def deleteTask(payload):
         print("Made it to delete task")
         response = TaskHandler.deleteTask(payload)
         response['type'] = 'taskDeleted'
         print("Task deleted")
-        emit('dataOut', response, broadcast=True)
+        emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
+        # return {'type': response['type'], 'id': response['datarec']['id']}
+        return response
 
     # Agenda CRUD......................................................
     def createAgenda(datarec):

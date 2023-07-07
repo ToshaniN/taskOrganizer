@@ -4,9 +4,11 @@ class SocketEvtRedirect:
     def redirect(payload):
         eventName = payload.pop('type')
         if (eventName == 'newTask') :
-            SocketHandler.createTask(payload)
+            return SocketHandler.createTask(payload)
         elif (eventName == 'updateTask'):
-            SocketHandler.updateTask(payload)
+            return SocketHandler.updateTask(payload)
         elif (eventName == 'deleteTask'):
-            SocketHandler.deleteTask(payload)
+            return SocketHandler.deleteTask(payload)
+        elif (eventName == 'newAgenda'):
+            SocketHandler.createAgenda(payload)
         
