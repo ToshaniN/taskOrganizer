@@ -10,7 +10,7 @@
                             (blur)="agenda.nameEditing=false" (focus)="copyAgenda(agendaIndex)"
                             (keydown.enter)="onEnter(agendaIndex); nameInput.blur()"
                             (keydown.tab)="tabToNext($event, -1, agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex)"
-                            (keyup)="onKeyup(agendaIndex)">  <!--updateAgendaWhileTyping(agendaIndex, 'name'+agendaIndex) ; updateAgendaOnInactivity(agendaIndex)-->                             
+                            (keyup)="onKeyup(agendaIndex)">                              
                 </div>
                 <div id="AStatus"> 
                     <h3 id="statusLabel">Status:</h3>
@@ -112,7 +112,7 @@
     <br><br>
 
     <!--Description and Comments-->
-    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="1" *ngIf="agendaExists(agenda_index)">
+    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="1" *ngIf="agendaExists(agenda_index) && todoList[agenda_index].tasks[task_index]">
         <h4>Description</h4>
         <textarea id="desText" [(ngModel)]="todoList[agenda_index].tasks[task_index].description" (focus)="copyTask(task_index, agenda_index)" 
                   (focusout)="updateTask(task_index, agenda_index)"></textarea>

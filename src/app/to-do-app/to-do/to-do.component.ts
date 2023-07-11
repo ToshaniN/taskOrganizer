@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { FlaskApiService } from '../../flask-api.service';
 import { SocketService } from '../../socket.service';
+import { EnvService } from '../../env.service';
 
 @Component({
   selector: 'app-to-do',
@@ -129,7 +130,7 @@ export class ToDoComponent implements OnInit {
   agendaInactivityTime:any
   taskInactivityTime:any
 
-  constructor(private fb:FormBuilder, private flask:FlaskApiService, private socket:SocketService) { }
+  constructor(private fb:FormBuilder, private flask:FlaskApiService, private socket:SocketService, private env: EnvService) { }
 
   ngOnInit() {
     this.newTaskForm = this.fb.group({
@@ -248,12 +249,17 @@ export class ToDoComponent implements OnInit {
   createTask(agendaIndex) {
     console.log("focus out")
     if (this.newTitle.valid) {
-      let jsonNewTask = {
-        "type": 'newTask',
+      let payload = {
         "task2agenda": this.todoList[agendaIndex].id,
         "title": this.newTitle.value,
         ...(this.newDate.valid && {due_date: this.newDate.value}),
         ...(this.newPriority.valid && {priority: this.newPriority.value})  
+      }
+      let jsonNewTask = {
+        "endpoint": this.env.apiUrl + 'task/create',
+        "httpMethod": "post",
+        "type": 'newTask',
+        "payload": payload
       }
       let fromSocket:any
       this.socket.dataIn(jsonNewTask).then((reply) => {
@@ -271,25 +277,6 @@ export class ToDoComponent implements OnInit {
         console.error(err)
         alert("An error occurred")
       })
-      // console.log(taskInfo.type + " " + taskInfo.id)
-      // this.socket.evtResultObs.subscribe({
-      //   next: (fromSocket) => {
-      //     console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
-      //     if (fromSocket.type == taskInfo.type && fromSocket.datarec.id == taskInfo.id) {
-      //       if (fromSocket['errCode'] == 0) {
-      //         console.log("Success: " + JSON.stringify(fromSocket))
-      //         this.todoList[agendaIndex].tasks.push(fromSocket['datarec'])
-      //         console.log("pushed datarec")
-      //       } else {
-      //         console.log("Failure: " + JSON.stringify(fromSocket))
-      //       }
-      //     }
-      //   },
-      //   error: (err) => {
-      //     console.error(err)
-      //     alert("An error occurred")
-      //   }
-      // });
     }
     this.resetTaskInputs();
     this.todoList[agendaIndex].wantNewTask = false;
@@ -309,8 +296,7 @@ export class ToDoComponent implements OnInit {
   
   updateTask(taskIndex, agendaIndex) {
     console.log("Updating task")
-    let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id, 
-                   "type": 'updateTask'}
+    let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id}
     for (let key in this.taskFieldCopy) {
       if (key == 'title' && this.todoList[agendaIndex].tasks[taskIndex][key] == '') {
           alert("Please enter a title for the task")
@@ -325,10 +311,16 @@ export class ToDoComponent implements OnInit {
       this.taskCopied = false
       return
     }
-    console.log(JSON.stringify(payload))
+    let jsonPayload = {
+      "endpoint": this.env.apiUrl + 'task/update',
+      "httpMethod": "post",
+      "type": 'updateTask',
+      "payload": payload
+    }
+    console.log(JSON.stringify(jsonPayload))
     let errorOccurred = false
     let fromSocket:any
-    this.socket.dataIn(payload).then((reply) => {
+    this.socket.dataIn(jsonPayload).then((reply) => {
       fromSocket = reply
       console.log("event emitted and back in component. Task info received: ", fromSocket)
       if (fromSocket['errCode'] == 0) {
@@ -343,25 +335,6 @@ export class ToDoComponent implements OnInit {
       errorOccurred = true
       alert("An error occurred")
     })
-    // console.log("event emitted and back in component. Task info received: ", taskInfo)
-    // this.socket.evtResultObs.subscribe({
-    //   next: (fromSocket) => {
-    //     console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
-    //     if (fromSocket.type == taskInfo.type && fromSocket.datarec.id == taskInfo.id) {
-    //       if (fromSocket['errCode'] == 0) {
-    //         console.log("Success: " + JSON.stringify(fromSocket))
-    //       } else {
-    //         console.log("Failure: " + JSON.stringify(fromSocket))
-    //         errorOccurred = true
-    //       }
-    //     }
-    //   },
-    //   error: (err) => {
-    //     console.error(err)
-    //     errorOccurred = true
-    //     alert("An error occurred")
-    //   }
-    // });
     if (errorOccurred) { //return edits to previous value
       for (let key in this.taskFieldCopy) {
         this.todoList[agendaIndex].tasks[taskIndex][key] = this.taskFieldCopy[key]
@@ -375,7 +348,13 @@ export class ToDoComponent implements OnInit {
     if (answer) {
       let id = this.todoList[agendaIndex].tasks[taskIndex].id
       console.log("deleting task")
-      let jsonPayload = {"id": id, "type": 'deleteTask'}
+      let payload = {"id": id}
+      let jsonPayload = {
+        "endpoint": this.env.apiUrl + 'task/delete',
+        "httpMethod": "post",
+        "type": 'deleteTask',
+        "payload": payload
+      }
       console.log(JSON.stringify(jsonPayload))
       let fromSocket:any
       this.socket.dataIn(jsonPayload).then((reply) => {
@@ -393,25 +372,6 @@ export class ToDoComponent implements OnInit {
         console.error(err)
         alert("An error occurred")
       })
-      // console.log("event emitted and back in component. Task info received: ", taskInfo)
-      // this.socket.evtResultObs.subscribe({
-      //   next: (fromSocket) => {
-      //     console.log('Data from socket --> now received in component:' + JSON.stringify(fromSocket));
-      //     if (fromSocket.type == taskInfo.type && fromSocket.datarec.id == taskInfo.id) {
-      //       if (fromSocket['errCode'] == 0) {
-      //         //hide inputs
-      //         this.todoList[agendaIndex].tasks.splice(taskIndex,1)
-      //         console.log("Success: " + JSON.stringify(fromSocket))
-      //       } else {
-      //         console.log("Failure: " + JSON.stringify(fromSocket))
-      //       }
-      //     }
-      //   },
-      //   error: (err) => {
-      //     console.error(err)
-      //     alert("An error occurred")
-      //   }
-      // });
     }    
   }
 

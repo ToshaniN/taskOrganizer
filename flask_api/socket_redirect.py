@@ -1,14 +1,14 @@
 from socket_handler import SocketHandler
 
 class SocketEvtRedirect:
-    def redirect(payload):
-        eventName = payload.pop('type')
+    def redirect(fromClient):
+        eventName = fromClient.pop('type')
         if (eventName == 'newTask') :
-            return SocketHandler.createTask(payload)
+            return SocketHandler.createTask(fromClient)
         elif (eventName == 'updateTask'):
-            return SocketHandler.updateTask(payload)
+            return SocketHandler.updateTask(fromClient)
         elif (eventName == 'deleteTask'):
-            return SocketHandler.deleteTask(payload)
+            return SocketHandler.deleteTask(fromClient)
         elif (eventName == 'newAgenda'):
-            SocketHandler.createAgenda(payload)
+            SocketHandler.createAgenda(fromClient)
         
