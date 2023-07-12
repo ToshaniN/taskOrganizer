@@ -42,7 +42,6 @@ export class SocketService {
     return new Promise((resolve) => {
       this.io.emit('dataIn', payload, (response) => {
         console.log("response received from server" + JSON.stringify(response))
-        console.log("event emitted to server. Returning acknowledgement")
         resolve(response)
       })
     })

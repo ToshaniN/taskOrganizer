@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, 'C:/Users/tosha/Documents/Github repos/taskOrganizer/flask_api')
 from task_handler import TaskHandler
 from agenda_handler import AgendaHandler
+from comment_handler import CommentHandler
 
 class DBInteractions:
     def getResponse(payload, endpoint):
@@ -30,4 +31,10 @@ class DBInteractions:
             response = AgendaHandler.updateAgenda(payload)
         elif (endpoint == 'agenda/delete'):
             response = AgendaHandler.deleteAgenda(payload)
+        elif (endpoint == 'comment/add'):
+            response = CommentHandler.createNewComment(payload)
+        elif (endpoint == 'comment/update'):
+            response = CommentHandler.updateComment(payload)
+        elif (endpoint == 'comment/remove'):
+            response = CommentHandler.deleteComment(payload)
         return response
