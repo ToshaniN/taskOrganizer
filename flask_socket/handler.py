@@ -30,6 +30,8 @@ class SocketHandler:
         'newComment': 'commentAdded',
         'updateComment': 'commentUpdated',
         'deleteComment': 'commentDeleted'
+        # 'getHierarchy': 'hierarchyFetched',
+        # 'getComments': 'commentsFetched'
     }
     
     def dataIn(fromClient):
@@ -39,57 +41,7 @@ class SocketHandler:
         #     time.sleep(3)
         #     print("Awake")
         response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
-        response['type'] = SocketHandler.responseEvtName[eventName]
-        emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
+        if (eventName != 'getHierarchy' and eventName != 'getComments'):
+            response['type'] = SocketHandler.responseEvtName[eventName]
+            emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
         return response
-
-    # Task CRUD........................................................
-    # def createTask(fromClient):
-    #     print("Made it to createTask")
-    #     response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
-    #     response['type'] = 'taskAdded'
-    #     emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
-    #     return response
- 
-
-    # def updateTask(fromClient):
-    #     print("Made it to update task")
-    #     response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
-    #     response['type'] = 'taskUpdated'
-    #     print("Task updated")
-    #     emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
-    #     return response
-
-
-    # def deleteTask(fromClient):
-    #     print("Made it to delete task")
-    #     response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
-    #     response['type'] = 'taskDeleted'
-    #     print("Task deleted")
-    #     emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
-    #     return response
-
-    # # Agenda CRUD......................................................
-    # def createAgenda(fromClient):
-    #     print("Made it to create agenda")
-    #     response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
-    #     response['type'] = 'agendaAdded'
-    #     print("New agenda added")
-    #     emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
-    #     return response
-    
-    # def updateAgenda(fromClient):
-    #     print("Made it to update agenda")
-    #     response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
-    #     response['type'] = 'agendaUpdated'
-    #     print("Agenda updated")
-    #     emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
-    #     return response
-    
-    # def deleteAgenda(fromClient):
-    #     print("Made it to delete agenda")
-    #     response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
-    #     response['type'] = 'agendaDeleted'
-    #     print("Agenda deleted")
-    #     emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
-    #     return response

@@ -21,7 +21,6 @@ export class SocketService {
 
   checkEvents() {
     for (let evt of this.events) {
-      console.log('Checking event: ' + evt)
       this.dataOut(evt)
     }
   }
@@ -41,7 +40,7 @@ export class SocketService {
   dataIn(payload) {
     return new Promise((resolve) => {
       this.io.emit('dataIn', payload, (response) => {
-        console.log("response received from server" + JSON.stringify(response))
+        console.log("response received from server", response)
         resolve(response)
       })
     })

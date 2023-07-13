@@ -1,6 +1,5 @@
 from app import socketio
 from handler import SocketHandler
-# from redirect import SocketEvtRedirect
 
 class SocketRoutes:
     socketio.on_event('connect', SocketHandler.connected)
