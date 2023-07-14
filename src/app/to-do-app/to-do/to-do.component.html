@@ -1,0 +1,141 @@
+<body>
+    <h1>Task Organizer</h1>
+    <ul>
+        <!--For each agenda-->
+        <li *ngFor="let agenda of todoList;let agendaIndex = index;"> 
+            <div id="agendaHeader" appClickedOutside (clickedOutside)="updateAgenda(agendaIndex)" >
+                <div id="AName">
+                    <h2 (click)="focusAFields(agendaIndex, 'nameEditing', 'name'+agendaIndex)" [hidden]="agenda.nameEditing"> {{agenda.name}} </h2>
+                    <input #nameInput [id]="'name'+agendaIndex" [(ngModel)]="agenda.name" [hidden]="!agenda.nameEditing" 
+                            (blur)="agenda.nameEditing=false" (focus)="copyAgenda(agendaIndex)"
+                            (keydown.enter)="onEnter(agendaIndex); nameInput.blur()"
+                            (keydown.tab)="tabToNext($event, -1, agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex)"
+                            (keyup)="onKeyup(agendaIndex)">                              
+                </div>
+                <div id="AStatus"> 
+                    <h3 id="statusLabel">Status:</h3>
+                    <p id="statusVal" (click)="focusAFields(agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex);" [hidden]="agenda.aStatusEditing">{{agenda.agenda_status}}</p> 
+                    <select #aStatusinput [id]="'agenda_status'+agendaIndex" [(ngModel)]="agenda.agenda_status" [hidden]="!agenda.aStatusEditing" 
+                            (blur)="agenda.aStatusEditing=false"  (focus)="copyAgenda(agendaIndex)"
+                            (keydown.enter)="onEnter(agendaIndex); aStatusinput.blur()"
+                            (keydown.tab)="tabToNext($event, -1, agendaIndex, 'nameEditing', 'name'+agendaIndex)">
+                        <option *ngFor="let status of agendaStatusOptions">{{ status.name }}</option>
+                    </select>
+                </div>
+                <button id="deleteAgendaButton" type="button" (click)="deleteAgenda(agendaIndex)">&#x2716;</button>
+            </div>
+            <h3 id="tasksHeading">Tasks</h3>
+            <!--For each task in agenda-->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Due Date</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" appClickedOutside (clickedOutside)="updateTask(taskIndex, agendaIndex)">
+                        <td>
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)" [hidden]="task.titleEditing">{{task.title}}</p>
+                            <input #titleInput [id]="'title_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.title" [hidden]="!task.titleEditing" 
+                                    (blur)="task.titleEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); titleInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)"
+                                    (keyup)="onTaskKeyup(taskIndex, agendaIndex)">
+                        </td>
+                        <td>
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)" [hidden]="task.dateEditing">{{task.due_date}}</p>
+                            <input #dateInput [id]="'due_date_'+agendaIndex+'_'+taskIndex" type="datetime-local" [(ngModel)]="task.due_date" [hidden]="!task.dateEditing" 
+                                    (blur)="task.dateEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); dateInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)">
+                        </td>
+                        <td>
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)" [hidden]="task.priorityEditing">{{task.priority}}</p>
+                            <select #priorInput [id]="'priority_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.priority" [hidden]="!task.priorityEditing" 
+                                    (blur)="task.priorityEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); priorInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)">
+                                <option value="" disabled selected>Priority</option>
+                                <option *ngFor="let p of priorityOptions">{{ p.name }}</option>
+                            </select> 
+                        </td>
+                        <td>
+                            <p (click)="showAndFocus(agendaIndex, taskIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)" [hidden]="task.statusEditing">{{task.task_status}}</p>
+                            <select #statusInput [id]="'task_status_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.task_status" [hidden]="!task.statusEditing" 
+                                    (blur)="task.statusEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); statusInput.blur()"
+                                    (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)">
+                                <option *ngFor="let s of taskStatusOptions">{{ s.name }}</option>
+                            </select>    
+                        </td>
+                        <td> <!--Action buttons-->
+                            <button id="detailsButton" type="button" (click)="openDetails(taskIndex, agendaIndex)">&#x2631;</button> <!--261A 2631 27B5 -->
+                            <button id="deleteTaskButton" type="button" (click)="deleteTask(taskIndex, agendaIndex)">&#x2716;</button> <!-- 2716  274C-->
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!--Create new task button-->
+            <form [formGroup]="newTaskForm">
+                <div id="taskInputs" *ngIf="agenda.wantNewTask" appClickedOutside (clickedOutside)="createTask(agendaIndex)" (keydown.enter)="createTask(agendaIndex)">
+                    <input type="text" id="taskName" placeholder="Title" formControlName="newTitle">
+                    <div id="taskInfo">
+                        <input id="taskDate" type="datetime-local" placeholder="Due Date" formControlName="newDate">
+                        <select id="taskPrior"  formControlName="newPriority">
+                            <option value="" disabled selected>Priority</option>
+                            <option placeholder="priority" *ngFor="let p of priorityOptions">{{ p.name }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button type="button" [hidden]="agenda.wantNewTask" id="addTask" name="addTask" (click)="displayTaskInputs(agendaIndex)">Add Task</button>
+                </div> 
+                <br><br>
+            </form>
+        </li>
+
+        <!--Create a new agenda button-->
+        <form [formGroup]="newTaskForm">
+            <div *ngIf="wantNewAgenda">
+                <input type="text" placeholder="Agenda Name" formControlName="newAgendaName" (focusout)="createAgenda()" (keydown.enter)="createAgenda()">
+            </div>
+            <div>
+                <button type="button" id="addAgenda" [hidden]="wantNewAgenda" (click)="displayAgendaInputs()">Add Agenda</button>
+            </div>
+        </form>
+    </ul>
+    <br><br>
+
+    <!--Description and Comments-->
+    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="1" *ngIf="agendaExists(agenda_index) && todoList[agenda_index].tasks[task_index]">
+        <h4>Description</h4>
+        <textarea id="desText" [(ngModel)]="todoList[agenda_index].tasks[task_index].description" (focus)="copyTask(task_index, agenda_index)" 
+                  (focusout)="updateTask(task_index, agenda_index)"></textarea>
+        <h4>Comments</h4>
+        <ul>
+            <li *ngFor="let comment of comments; let commentIndex = index">
+                <textarea [(ngModel)]="comment.comment_text" (focus)="copyComment(commentIndex)" (focusout)="updateComment(commentIndex)"></textarea>
+                <button id="deleteCommentButton" type="button" (click)="deleteComment(commentIndex)">&#x2716;</button>
+            </li>
+            <button name="addNewComment" type="button" [hidden]="todoList[agenda_index].tasks[task_index].wantNewComment" (click)="displayCommentInput()">New comment</button>
+            <input type="text" id="commentInput" *ngIf="todoList[agenda_index].tasks[task_index].wantNewComment" [(ngModel)]="newComment" 
+                    appClickedOutside (clickedOutside)="addComment(task_index, agenda_index)" (keydown.enter)="addComment(task_index, agenda_index)">
+        </ul>                       
+    </app-side-container>    
+</body>
+
+<!-- Events being captured:
+        - clickOutside: api call made if row that was being edited lost focus and has changed
+        - keydown.enter: update/create fields using enter. Blurs input after
+        - keydown.tab: press tab to move from one input field to another. 
+            - focus on one input field, press tab -> next input field is now visible and in focus
+            - changes to previous input are sent in api request
+        - keyup: to make real time updates visible
+            - sends api request if there has been a 2s gap in typing (inactivity)
+            - sends api request every few seconds while typing
+-->
