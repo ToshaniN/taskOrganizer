@@ -15,7 +15,8 @@ export class ToDoComponent implements OnInit {
 
   newTaskForm: FormGroup;
   wantNewAgenda = false;
-  agendaFieldCopy = {"name":"",
+  agendaFieldCopy = {"id": "",
+                     "name":"",
                      "agenda_status":""};
   taskFieldCopy = {"id":"",
                    "title":"",
@@ -151,7 +152,7 @@ export class ToDoComponent implements OnInit {
       let fromSocket:any
       this.socket.dataIn(jsonPayload).then((reply) => {
         fromSocket = reply
-        console.log("event emitted and back in component. Info received: ", fromSocket)
+        console.log("Event emitted (getHierarchy) and back in component. Info received: ", fromSocket)
         this.todoList = fromSocket
       })
       .catch((err) => {
@@ -168,11 +169,12 @@ export class ToDoComponent implements OnInit {
   subscribeToObs() {
     this.socket.evtResultObs.subscribe({
       next: (fromSocket) => {
-        if (fromSocket == null) {
+        if (fromSocket == null || fromSocket == 'transport close') {
           return
         }
         let eventName = fromSocket.type
-        console.log("eventName = ", eventName)
+        console.log("fromSocket received in subscription:", fromSocket)
+        console.log("eventName received in subscription: ", eventName)
         this.updateViewForEvt[eventName](fromSocket)
       },
       error: (err) => {
@@ -197,54 +199,54 @@ export class ToDoComponent implements OnInit {
 
   updateViewNewTask(fromSocket) {
     if (fromSocket['errCode'] == 0) {
-      console.log("Success: " + JSON.stringify(fromSocket))
       this.todoList.find(i => i.id == fromSocket.datarec.task2agenda).tasks.push(fromSocket['datarec'])
-      console.log("pushed datarec")
+      console.log("Success in updateViewNewTask: ", fromSocket)
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewNewTask: ", fromSocket)
     }
   }
 
   updateViewUpdateTask(fromSocket) {
     if (fromSocket['errCode'] == 0) {
-      console.log("Success: " + JSON.stringify(fromSocket))
       let taskToUpdate = this.todoList.find(i => i.id == fromSocket.datarec.task2agenda).tasks.find(j => j.id == fromSocket.datarec.id)
-      Object.assign(taskToUpdate, fromSocket.datarec)
-      console.log("pushed datarec")
+      if (taskToUpdate) {
+        Object.assign(taskToUpdate, fromSocket.datarec)
+        console.log("Success in updateViewUpdateTask: ", fromSocket)
+      }
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewUpdateTask: ", fromSocket)
     }
   }
 
   updateViewDeleteTask(fromSocket) {
     if (fromSocket['errCode'] == 0) {
-      //hide inputs
       let agendaIndex = this.todoList.findIndex(i => i.id == fromSocket.datarec.task2agenda)
       let taskIndex = this.todoList[agendaIndex].tasks.findIndex(j => j.id == fromSocket.datarec.id) 
       this.todoList[agendaIndex].tasks.splice(taskIndex,1)
-      console.log("Success: " + JSON.stringify(fromSocket))
+      console.log("Success in updateViewDeleteTask: ", fromSocket)
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewDeleteTask: ", fromSocket)
     }
   }
 
   updateViewNewAgenda(fromSocket) {
     if (fromSocket['errCode'] == 0) {
-      console.log("Success: " + JSON.stringify(fromSocket))
       this.todoList.push(fromSocket['datarec'])
-      console.log("pushed datarec")
+      console.log("Success in updateViewNewAgenda: ", fromSocket)
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewNewAgenda: ", fromSocket)
     }
   }
 
   updateViewUpdateAgenda(fromSocket) {
     if (fromSocket['errCode'] == 0) {
-      console.log("Success: " + JSON.stringify(fromSocket))
       let agendaToUpdate = this.todoList.find(i => i.id == fromSocket.datarec.id)
-      Object.assign(agendaToUpdate, fromSocket.datarec)
+      if (agendaToUpdate) {
+        Object.assign(agendaToUpdate, fromSocket.datarec)
+        console.log("Success in updateViewUpdateAgenda: ", fromSocket)
+      }
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewUpdateAgenda: ", fromSocket)
     }
   }
 
@@ -252,29 +254,30 @@ export class ToDoComponent implements OnInit {
     if (fromSocket['errCode'] == 0) {
       let agendaIndex = this.todoList.findIndex(i => i.id == fromSocket.datarec.id)
       this.todoList.splice(agendaIndex,1)
-      console.log("Success: " + JSON.stringify(fromSocket))
+      console.log("Success in updateViewDeleteAgenda: ", fromSocket)
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewDeleteAgenda: ", fromSocket)
     }
   }
 
   updateViewNewComment(fromSocket) {
-    if (fromSocket['errCode'] == 0) {
-      console.log("Success: " + JSON.stringify(fromSocket))
+    if (fromSocket['errCode'] == 0 && fromSocket["datarec"].comment2task == this.todoList[this.agenda_index].tasks[this.task_index].id) {
       this.comments.push(fromSocket["datarec"])
-      console.log("pushed datarec")
+      console.log("Success in updateViewNewComment: ", fromSocket)
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewNewComment: ", fromSocket)
     }
   }
 
   updateViewUpdateComment(fromSocket) {
     if (fromSocket['errCode'] == 0) {
-      let comment_to_update = this.comments.find(c => c.id == fromSocket.datarec.id)
-      Object.assign(comment_to_update, fromSocket.datarec)
-      console.log("Success: " + JSON.stringify(fromSocket))
+      let commentToUpdate = this.comments.find(c => c.id == fromSocket.datarec.id)
+      if (commentToUpdate) {
+        Object.assign(commentToUpdate, fromSocket.datarec)
+        console.log("Success in updateViewUpdateComment: ", fromSocket)
+      }
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewUpdateComment: ", fromSocket)
     }
   }
 
@@ -282,9 +285,9 @@ export class ToDoComponent implements OnInit {
     if (fromSocket['errCode'] == 0) {
       let commentIndex = this.comments.findIndex(c => c.id == fromSocket.datarec.id)
       this.comments.splice(commentIndex, 1)
-      console.log("Success: " + JSON.stringify(fromSocket))
+      console.log("Success in updateViewDeleteComment: ", fromSocket)
     } else {
-      console.log("Failure: " + JSON.stringify(fromSocket))
+      console.log("Failure in updateViewDeleteComment: ", fromSocket)
     }
   }
 
@@ -321,7 +324,7 @@ export class ToDoComponent implements OnInit {
   }
 
   createTask(agendaIndex) {
-    console.log("focus out")
+    console.log("Focus out triggered --> Creating new task now")
     if (this.newTitle.valid) {
       let payload = {
         "task2agenda": this.todoList[agendaIndex].id,
@@ -338,13 +341,12 @@ export class ToDoComponent implements OnInit {
       let fromSocket:any
       this.socket.dataIn(jsonNewTask).then((reply) => {
         fromSocket = reply
-        console.log("event emitted and back in component. Info received: ", fromSocket)
+        console.log("Event emitted (createTask) and back in component. Info received: ", fromSocket)
         if (fromSocket['errCode'] == 0) {
-          console.log("Success: " + JSON.stringify(fromSocket))
           this.todoList[agendaIndex].tasks.push(fromSocket['datarec'])
-          console.log("pushed datarec")
+          console.log("Success in createTask: ", fromSocket)
         } else {
-          console.log("Failure: " + JSON.stringify(fromSocket))
+          console.log("Failure in createTask: ", fromSocket)
         }
       })
       .catch((err) => {
@@ -356,22 +358,12 @@ export class ToDoComponent implements OnInit {
     this.todoList[agendaIndex].wantNewTask = false;
   }
 
-  copyTask(taskIndex, agendaIndex) {
-    if (this.taskCopied) {
-      return
-    }
-    console.log("copying task id: ", this.todoList[agendaIndex].tasks[taskIndex].id)
-    for (let key in this.taskFieldCopy) {
-      this.taskFieldCopy[key] = this.todoList[agendaIndex].tasks[taskIndex][key]
-    }
-    console.log(JSON.stringify(this.taskFieldCopy))
-    this.taskCopied = true
-  }
   
   updateTask(taskIndex, agendaIndex) {
     console.log("Updating task id: ", this.todoList[agendaIndex].tasks[taskIndex].id)
     let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id}
     if (payload.id != this.taskFieldCopy.id) {
+      console.log("Id of task copy != Id of update target")
       return
     }
     for (let key in this.taskFieldCopy) {
@@ -394,16 +386,15 @@ export class ToDoComponent implements OnInit {
       "type": 'updateTask',
       "payload": payload
     }
-    console.log(JSON.stringify(jsonPayload))
     let errorOccurred = false
     let fromSocket:any
     this.socket.dataIn(jsonPayload).then((reply) => {
       fromSocket = reply
-      console.log("event emitted and back in component. Info received: ", fromSocket)
+      console.log("Event emitted (updateTask) and back in component. Info received: ", fromSocket)
       if (fromSocket['errCode'] == 0) {
-        console.log("Success: " + JSON.stringify(fromSocket))
+        console.log("Success in updateTask: ", fromSocket)
       } else {
-        console.log("Failure: " + JSON.stringify(fromSocket))
+        console.log("Failure in updateTask: ", fromSocket)
         errorOccurred = true
       }
     })
@@ -420,29 +411,29 @@ export class ToDoComponent implements OnInit {
     this.taskCopied = false
   }
 
+
   deleteTask(taskIndex, agendaIndex) {
     var answer = confirm("Do you want to delete this task?");
     if (answer) {
       let id = this.todoList[agendaIndex].tasks[taskIndex].id
-      console.log("deleting task")
       let payload = {"id": id}
+      console.log("Deleting task id: ", id)
       let jsonPayload = {
         "endpoint":'task/delete',
         "httpMethod": "post",
         "type": 'deleteTask',
         "payload": payload
       }
-      console.log(JSON.stringify(jsonPayload))
       let fromSocket:any
       this.socket.dataIn(jsonPayload).then((reply) => {
         fromSocket = reply
-        console.log("event emitted and back in component. Info received: ", fromSocket)
+        console.log("Event emitted (deleteTask) and back in component. Info received: ", fromSocket)
         if (fromSocket['errCode'] == 0) {
           //hide inputs
           this.todoList[agendaIndex].tasks.splice(taskIndex,1)
-          console.log("Success: " + JSON.stringify(fromSocket))
+          console.log("Success in deleteTask: ", fromSocket)
         } else {
-          console.log("Failure: " + JSON.stringify(fromSocket))
+          console.log("Failure in deleteTask: ", fromSocket)
         }
       })
       .catch((err) => {
@@ -450,6 +441,19 @@ export class ToDoComponent implements OnInit {
         alert("An error occurred")
       })
     }    
+  }
+
+  copyTask(taskIndex, agendaIndex) {
+    console.log("Copying task id: ", this.todoList[agendaIndex].tasks[taskIndex].id)
+    if (this.taskCopied) {
+      console.log("Task id was already copied: ", this.todoList[agendaIndex].tasks[taskIndex].id)
+      return
+    }
+    for (let key in this.taskFieldCopy) {
+      this.taskFieldCopy[key] = this.todoList[agendaIndex].tasks[taskIndex][key]
+    }
+    console.log("Final copy of task: ", this.taskFieldCopy)
+    this.taskCopied = true
   }
 
   openDetails(taskIndex:number, agendaIndex:number) {
@@ -463,16 +467,15 @@ export class ToDoComponent implements OnInit {
       "type": 'getComments',
       "payload": payload
     }
-    console.log(JSON.stringify(jsonPayload))
     let fromSocket:any
     this.socket.dataIn(jsonPayload).then((reply) => {
       fromSocket = reply
-      console.log("event emitted and back in component. Info received: ", fromSocket)
+      console.log("Event emitted (comments_getAll) and back in component. Info received: ", fromSocket)
       if (fromSocket['errCode'] == 0) {
-        console.log("Success: " + JSON.stringify(fromSocket))
         this.comments = fromSocket['datarec']
+        console.log("Success in openDetails: ", fromSocket)
       } else {
-        console.log("Failure: " + JSON.stringify(fromSocket))
+        console.log("Failure in openDetails: ", fromSocket)
       }
     })
     .catch((err) => {
@@ -490,13 +493,11 @@ export class ToDoComponent implements OnInit {
 
   showAndFocus(agendaIndex, taskIndex, field, id) {
     this.todoList[agendaIndex].tasks[taskIndex][field] = true
-    console.log("Show and focus applied on -> field: " + field + " id: " + id)
     setTimeout(() => {
       document.getElementById(id).focus()});
   }
 
   tabToNext(tabPress, taskIndex, agendaIndex, nextField, nextFieldId) {
-    console.log("tab pressed")
     tabPress.preventDefault()
     if (taskIndex != -1) {
       this.updateTask(taskIndex, agendaIndex)
@@ -520,16 +521,16 @@ export class ToDoComponent implements OnInit {
   }
 
   updateTaskWhileTyping(taskIndex, agendaIndex) {
-    console.log("while typing called")
+    console.log("updateTaskWhileTyping called")
     setTimeout(() => {
-      console.log("CALLED FUNCS WHILE TYPING")
+      console.log("Updating and copying task while typing")
       this.updateTask(taskIndex, agendaIndex)
       this.copyTask(taskIndex, agendaIndex)
       }, 3000)
   } 
 
   updateTaskOnInactivity(taskIndex, agendaIndex) {
-    console.log("On inactivity called")
+    console.log("updateTaskOnInactivity called")
     clearTimeout(this.taskInactivityTime)
     this.taskInactivityTime = setTimeout(() => {
       this.updateTask(taskIndex, agendaIndex)
@@ -547,7 +548,7 @@ export class ToDoComponent implements OnInit {
     if (this.newComment != "") {
       let commentToAdd = {"comment2task": this.todoList[agendaIndex].tasks[taskIndex].id,
                           "comment_text": this.newComment }
-      ///
+      console.log("Adding a new comment for task id: ", commentToAdd.comment2task)
       let jsonPayload = {
         "endpoint":'comment/add',
         "httpMethod": "post",
@@ -557,13 +558,12 @@ export class ToDoComponent implements OnInit {
       let fromSocket:any
       this.socket.dataIn(jsonPayload).then((reply) => {
         fromSocket = reply
-        console.log("event emitted and back in component. Info received: ", fromSocket)
+        console.log("Event emitted (addComment) and back in component. Info received: ", fromSocket)
         if (fromSocket['errCode'] == 0) {
-          console.log("Success: " + JSON.stringify(fromSocket))
           this.comments.push(fromSocket["datarec"])
-          console.log("pushed datarec")
+          console.log("Success in addComment: ", fromSocket)
         } else {
-          console.log("Failure: " + JSON.stringify(fromSocket))
+          console.log("Failure in addComment: ", fromSocket)
         }
       })
       .catch((err) => {
@@ -575,24 +575,15 @@ export class ToDoComponent implements OnInit {
     this.todoList[this.agenda_index].tasks[this.task_index].wantNewComment = false;
   }
 
-  copyComment(commentIndex) {
-    console.log("copying comment")
-    for (let key in this.commentFieldCopy) {
-      this.commentFieldCopy[key] = this.comments[commentIndex][key]
-    }
-    console.log(JSON.stringify(this.commentFieldCopy))
-  }
-
   updateComment(commentIndex) {
     let payload = {"id":this.comments[commentIndex].id}
+    console.log("Updating comment id: ", payload.id)
     if (this.commentFieldCopy.comment_text != this.comments[commentIndex].comment_text) {
       payload["comment_text"] = this.comments[commentIndex].comment_text
     } else {
       return //nothing was changed
     }
-    console.log("payload: " + JSON.stringify(payload))
     let errorOccurred = false
-    ///
     let jsonPayload = {
       "endpoint":'comment/update',
       "httpMethod": "post",
@@ -602,12 +593,12 @@ export class ToDoComponent implements OnInit {
     let fromSocket:any
     this.socket.dataIn(jsonPayload).then((reply) => {
       fromSocket = reply
-      console.log("event emitted and back in component. Info received: ", fromSocket)
+      console.log("Event emitted (updateComment) and back in component. Info received: ", fromSocket)
       if (fromSocket['errCode'] == 0) {
-        console.log("Success: " + JSON.stringify(fromSocket))
+        console.log("Success in updateComment: ", fromSocket)
       } else {
         errorOccurred = true
-        console.log("Failure: " + JSON.stringify(fromSocket))
+        console.log("Failure in updateComment: ", fromSocket)
       }
     })
     .catch((err) => {
@@ -624,6 +615,7 @@ export class ToDoComponent implements OnInit {
     var answer = confirm("Do you want to delete this comment?");
     if (answer) {
       let payload = {"id": this.comments[commentIndex].id}
+      console.log("Deleting comment id: ", payload.id)
       let jsonPayload = {
         "endpoint":'comment/remove',
         "httpMethod": "post",
@@ -633,12 +625,12 @@ export class ToDoComponent implements OnInit {
       let fromSocket:any
       this.socket.dataIn(jsonPayload).then((reply) => {
         fromSocket = reply
-        console.log("event emitted and back in component. Info received: ", fromSocket)
+        console.log("Event emitted (deleteComment) and back in component. Info received: ", fromSocket)
         if (fromSocket['errCode'] == 0) {
           this.comments.splice(commentIndex, 1)
-          console.log("Success: " + JSON.stringify(fromSocket))
+          console.log("Success in deleteComment: ", fromSocket)
         } else {
-          console.log("Failure: " + JSON.stringify(fromSocket))
+          console.log("Failure in deleteComment: ", fromSocket)
         }
       })
       .catch((err) => {
@@ -646,6 +638,14 @@ export class ToDoComponent implements OnInit {
         alert("An error occurred")
       })
     }
+  }
+
+  copyComment(commentIndex) {
+    console.log("Copying comment id: ", this.comments[commentIndex].id)
+    for (let key in this.commentFieldCopy) {
+      this.commentFieldCopy[key] = this.comments[commentIndex][key]
+    }
+    console.log("Final comment copy: ", this.commentFieldCopy)
   }
   //......................................................................
 
@@ -655,9 +655,9 @@ export class ToDoComponent implements OnInit {
     this.wantNewAgenda = true;
   }
 
-
   createAgenda() {
     if (this.newAgendaName.valid) {
+      console.log("Creating new agenda")
       let payload = {"name": this.newAgendaName.value}
       let jsonPayload = {
         "endpoint": 'agenda/create',
@@ -668,13 +668,12 @@ export class ToDoComponent implements OnInit {
       let fromSocket:any
       this.socket.dataIn(jsonPayload).then((reply) => {
         fromSocket = reply
-        console.log("event emitted and back in component. Agenda info received: ", fromSocket)
-        if (fromSocket['errCode'] == 0) {
-          console.log("Success: " + JSON.stringify(fromSocket))
+        console.log("Event emitted (createAgenda) and back in component. Info received: ", fromSocket)
+        if (fromSocket['errCode'] == 0) {          
           this.todoList.push(fromSocket['datarec'])
-          console.log("pushed datarec")
+          console.log("Success in createAgenda: ", fromSocket)
         } else {
-          console.log("Failure: " + JSON.stringify(fromSocket))
+          console.log("Failure in createAgenda: ", fromSocket)
         }
       })
       .catch((err) => {
@@ -687,21 +686,14 @@ export class ToDoComponent implements OnInit {
   }
 
 
-  copyAgenda(agendaIndex) {
-    if (this.agendaCopied) {
+  updateAgenda(agendaIndex) {
+    let payload = {"id":this.todoList[agendaIndex].id}
+    console.log("Updating agenda id: ", payload.id)
+    if (payload.id != this.agendaFieldCopy.id) {
+      console.log("Id of agenda copy != Id of update target")
       return
     }
-    console.log("Copying the fields")
-    this.agendaFieldCopy.name = this.todoList[agendaIndex].name
-    this.agendaFieldCopy.agenda_status = this.todoList[agendaIndex].agenda_status
-    console.log(JSON.stringify(this.agendaFieldCopy))
-    this.agendaCopied = true
-  }
-
-
-  updateAgenda(agendaIndex) {
-    console.log("Updating agenda")
-    let payload = {"id":this.todoList[agendaIndex].id}
+    console.log(this.agendaFieldCopy)
     for (let key in this.agendaFieldCopy) {
       if (key == 'name' && this.todoList[agendaIndex][key] == '') {
           alert("Please enter a name for the agenda")
@@ -723,16 +715,15 @@ export class ToDoComponent implements OnInit {
       "payload": payload
     }
     let errorOccurred = false
-    console.log(JSON.stringify(payload))
     let fromSocket:any
     this.socket.dataIn(jsonPayload).then((reply) => {
       fromSocket = reply
-      console.log("event emitted and back in component. Agenda info received: ", fromSocket)
+      console.log("Event emitted (updateAgenda) and back in component. Info received: ", fromSocket)
       if (fromSocket['errCode'] == 0) {
-        console.log("Success: " + JSON.stringify(fromSocket))
+        console.log("Success in updateAgenda: ", fromSocket)
       } else {
         errorOccurred = true
-        console.log("Failure: " + JSON.stringify(fromSocket))
+        console.log("Failure in updateAgenda: ", fromSocket)
       }
     })
     .catch((err) => {
@@ -741,7 +732,6 @@ export class ToDoComponent implements OnInit {
       alert("An error occurred")
     })
     if (errorOccurred) { //return edits to previous value
-      console.log("inside error if")
       for (let key in this.agendaFieldCopy) {
         this.todoList[agendaIndex][key] = this.agendaFieldCopy[key]
       }
@@ -754,6 +744,7 @@ export class ToDoComponent implements OnInit {
     var answer = confirm("Do you want to delete this agenda?");
     if (answer) {
       let payload = {"id": this.todoList[agendaIndex].id}
+      console.log("Deleting agenda id: ", payload.id)
       let jsonPayload = {
         "endpoint": 'agenda/delete',
         "httpMethod": "post",
@@ -763,12 +754,12 @@ export class ToDoComponent implements OnInit {
       let fromSocket:any
       this.socket.dataIn(jsonPayload).then((reply) => {
         fromSocket = reply
-        console.log("event emitted and back in component. Agenda info received: ", fromSocket)
+        console.log("Event emitted (deleteAgenda) and back in component. Info received: ", fromSocket)
         if (fromSocket['errCode'] == 0) {
           this.todoList.splice(agendaIndex,1)
-          console.log("Success: " + JSON.stringify(fromSocket))
+          console.log("Success in deleteAgenda: ", fromSocket)
         } else {
-          console.log("Failure: " + JSON.stringify(fromSocket))
+          console.log("Failure in deleteAgenda: ", fromSocket)
         }
       })
       .catch((err) => {
@@ -778,13 +769,24 @@ export class ToDoComponent implements OnInit {
     }
   }
 
+  copyAgenda(agendaIndex) {
+    console.log("Copying agenda id: ", this.todoList[agendaIndex].id)
+    if (this.agendaCopied) {
+      return
+    }
+    for (let key in this.agendaFieldCopy) {
+      this.agendaFieldCopy[key] = this.todoList[agendaIndex][key]
+    }
+    console.log("Final agenda copy: ", this.agendaFieldCopy)
+    this.agendaCopied = true
+  }
+
   agendaExists(agendaIndex) {
     return this.todoList[agendaIndex] && this.todoList[agendaIndex].tasks
   }
 
   focusAFields(agendaIndex, field, id) {
     this.todoList[agendaIndex][field] = true
-    console.log("Show and focus on field: " + field + " id: " + id)
     setTimeout(() => {
         document.getElementById(id).focus()
       }
@@ -802,6 +804,7 @@ export class ToDoComponent implements OnInit {
   }
 
   updateAgendaOnInactivity(agendaIndex) {
+    console.log("updateAgendaOnInactivity called")
     clearTimeout(this.agendaInactivityTime)
     this.agendaInactivityTime = setTimeout(() => {
       this.updateAgenda(agendaIndex)
@@ -810,13 +813,12 @@ export class ToDoComponent implements OnInit {
   }
   
   updateAgendaWhileTyping(agendaIndex) {
-    console.log("while typing called")
+    console.log("updateAgendaWhileTyping called")
     setTimeout(() => {
-      console.log("CALLED FUNCS WHILE TYPING")
+      console.log("Updating and copying while typing")
       this.updateAgenda(agendaIndex)
       this.copyAgenda(agendaIndex)
     }, 3000)
   }
-
   //.....................................................................
 }

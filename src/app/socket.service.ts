@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { EnvService } from './env.service';
-import {io, Socket} from 'socket.io-client';
-import { Observable, Subject } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -28,11 +28,11 @@ export class SocketService {
   dataOut(eventName) {
     console.log('Listening for: ' + eventName)
     this.io.on(eventName, (data, callback) => {
-      console.log("event occurred: " + eventName)
+      console.log("Event occurred: " + eventName)
       this.eventActions[eventName](data)
       this.evtResult.next(data)
       if (eventName != 'connect' && eventName != 'disconnect') {
-        callback("Client has recieved the event")
+        callback("Client has recieved the event: " + eventName)
       }
     })
   }
@@ -40,7 +40,7 @@ export class SocketService {
   dataIn(payload) {
     return new Promise((resolve) => {
       this.io.emit('dataIn', payload, (response) => {
-        console.log("response received from server", response)
+        console.log("Response received from server in dataIn", response)
         resolve(response)
       })
     })
@@ -50,8 +50,8 @@ export class SocketService {
     'connect': () => {
       console.log("Connected to server")
     },
-    'disconnect': () => {
-      console.log("Disconnected from server")
+    'disconnect': (data) => {
+      console.log("Disconnected from server: ", data)
     },
     'error': (err) => {
       console.error('Error encountered:', err);

@@ -16,4 +16,8 @@ class AgendaTaskHandler:
                     taskToAdd = session.query(tasks).filter(tasks.id == task).first() 
                     agendaToAdd["tasks"].append(MakeResponse.createResponse(taskToAdd))
             response.append(agendaToAdd)
+            print("Agenda fetched: ", agendaToAdd)
+            print("")
+        print("Final Hieararchy fetched: ", response)
+        print("")
         return response

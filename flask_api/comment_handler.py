@@ -60,11 +60,14 @@ class CommentHandler:
 
     def getComments(receivedInfo):
         comment2task = receivedInfo["comment2task"]
+        print("Fetching comments for task id: ", comment2task)
         commentList = session.query(comments).filter(comments.comment2task==comment2task, comments.status=="Active")
         datarec = []
         if commentList is not None:
             for comment in commentList:
                 datarec.append(MakeResponse.createResponse(comment))
+                print("comment fetched: ", MakeResponse.createResponse(comment))
         response = {"errCode":0, 
                     "datarec": datarec}
+        print("Final list of comments: ", response)
         return response

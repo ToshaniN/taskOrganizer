@@ -30,8 +30,6 @@ class SocketHandler:
         'newComment': 'commentAdded',
         'updateComment': 'commentUpdated',
         'deleteComment': 'commentDeleted'
-        # 'getHierarchy': 'hierarchyFetched',
-        # 'getComments': 'commentsFetched'
     }
     
     def dataIn(fromClient):
