@@ -1,6 +1,16 @@
 <body>
     <h1>Task Organizer</h1>
     <ul>
+        <!--Create a new agenda button-->
+        <form [formGroup]="newTaskForm">
+            <div *ngIf="wantNewAgenda">
+                <input type="text" placeholder="Agenda Name" formControlName="newAgendaName" (focusout)="createAgenda()" (keydown.enter)="createAgenda()">
+            </div>
+            <div>
+                <button type="button" id="addAgenda" [hidden]="wantNewAgenda" (click)="displayAgendaInputs()">New Agenda</button>
+            </div>
+        </form>
+        <br>
         <!--For each agenda-->
         <li *ngFor="let agenda of todoList;let agendaIndex = index;"> 
             <div id="agendaHeader" appClickedOutside (clickedOutside)="updateAgenda(agendaIndex)" >
@@ -98,21 +108,11 @@
                 <br><br>
             </form>
         </li>
-
-        <!--Create a new agenda button-->
-        <form [formGroup]="newTaskForm">
-            <div *ngIf="wantNewAgenda">
-                <input type="text" placeholder="Agenda Name" formControlName="newAgendaName" (focusout)="createAgenda()" (keydown.enter)="createAgenda()">
-            </div>
-            <div>
-                <button type="button" id="addAgenda" [hidden]="wantNewAgenda" (click)="displayAgendaInputs()">Add Agenda</button>
-            </div>
-        </form>
     </ul>
     <br><br>
 
     <!--Description and Comments-->
-    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="1" *ngIf="agendaExists(agenda_index) && todoList[agenda_index].tasks[task_index]">
+    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="agenda_index+'_'+task_index" *ngIf="agendaExists(agenda_index, task_index)">
         <h4>Description</h4>
         <textarea id="desText" [(ngModel)]="todoList[agenda_index].tasks[task_index].description" (focus)="copyTask(task_index, agenda_index)" 
                   (focusout)="updateTask(task_index, agenda_index)"></textarea>

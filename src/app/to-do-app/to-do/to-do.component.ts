@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterContentChecked } from '@angular/core';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { FlaskApiService } from '../../flask-api.service';
@@ -11,7 +11,7 @@ import { EnvService } from '../../env.service';
   styleUrls: ['./to-do.component.css']
 })
 
-export class ToDoComponent implements OnInit {
+export class ToDoComponent implements OnInit, AfterContentChecked  {
 
   newTaskForm: FormGroup;
   wantNewAgenda = false;
@@ -132,7 +132,11 @@ export class ToDoComponent implements OnInit {
   agendaInactivityTime:any
   taskInactivityTime:any
 
-  constructor(private fb:FormBuilder, private flask:FlaskApiService, private socket:SocketService, private env: EnvService) { }
+  constructor(private fb:FormBuilder, 
+              private flask:FlaskApiService, 
+              private socket:SocketService, 
+              private env: EnvService, 
+              private changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.newTaskForm = this.fb.group({
@@ -142,7 +146,7 @@ export class ToDoComponent implements OnInit {
       newAgendaName: ['', [Validators.required]]
     })
 
-    //Retrieves original view from database and saves it to the var that is displayed
+    // Retrieves original view from database and saves it to the var that is displayed
       let jsonPayload = {
         "endpoint": 'get_agenda_task_hierarchy',
         "httpMethod": "post",
@@ -153,16 +157,25 @@ export class ToDoComponent implements OnInit {
       this.socket.dataIn(jsonPayload).then((reply) => {
         fromSocket = reply
         console.log("Event emitted (getHierarchy) and back in component. Info received: ", fromSocket)
-        this.todoList = fromSocket
+        if (fromSocket["errCode"] == 0) {
+          this.todoList = fromSocket["datarec"]
+          console.log("Success in getHierarchy: ", fromSocket)
+        } else {
+          console.log("Failure in getHierarchy: ", fromSocket)
+        }
+        
       })
       .catch((err) => {
         console.error(err)
         alert("An error occurred")
       })
-
       
       // Subscription to socket to allow for multiuser updates
       this.subscribeToObs()
+  }
+
+  ngAfterContentChecked(): void {
+    this.changeDetector.detectChanges();
   }
 
 // SOCKET METHODS ........................................................
@@ -193,7 +206,7 @@ export class ToDoComponent implements OnInit {
     'agendaDeleted': (fromSocket) => {this.updateViewDeleteAgenda(fromSocket)},
     'commentAdded': (fromSocket) => {this.updateViewNewComment(fromSocket)},
     'commentUpdated': (fromSocket) => {this.updateViewUpdateComment(fromSocket)},
-    'commentDeleted': (fromSocket) => {this.updateViewDeleteComment(fromSocket)},
+    'commentDeleted': (fromSocket) => {this.updateViewDeleteComment(fromSocket)}
   }
 
 
@@ -231,7 +244,7 @@ export class ToDoComponent implements OnInit {
 
   updateViewNewAgenda(fromSocket) {
     if (fromSocket['errCode'] == 0) {
-      this.todoList.push(fromSocket['datarec'])
+      this.todoList.unshift(fromSocket['datarec'])
       console.log("Success in updateViewNewAgenda: ", fromSocket)
     } else {
       console.log("Failure in updateViewNewAgenda: ", fromSocket)
@@ -487,7 +500,7 @@ export class ToDoComponent implements OnInit {
     }
     this.copyTask(taskIndex, agendaIndex)    //if task is already copied: fields except for description will get updated in next line
     this.updateTask(taskIndex, agendaIndex)  //    if task had not been previously copied --> nothing to update --> update api will not be called
-    this.details.openContainer();
+    setTimeout(() => {this.details.openContainer()})
     this.copyTask(taskIndex, agendaIndex)    //copying task again since clicking anywhere on sidecontainer will make task row lose focus --> clickedOutside triggered --> update api again
   }
 
@@ -670,7 +683,7 @@ export class ToDoComponent implements OnInit {
         fromSocket = reply
         console.log("Event emitted (createAgenda) and back in component. Info received: ", fromSocket)
         if (fromSocket['errCode'] == 0) {          
-          this.todoList.push(fromSocket['datarec'])
+          this.todoList.unshift(fromSocket["datarec"])
           console.log("Success in createAgenda: ", fromSocket)
         } else {
           console.log("Failure in createAgenda: ", fromSocket)
@@ -781,8 +794,13 @@ export class ToDoComponent implements OnInit {
     this.agendaCopied = true
   }
 
-  agendaExists(agendaIndex) {
-    return this.todoList[agendaIndex] && this.todoList[agendaIndex].tasks
+  agendaExists(agendaIndex, taskIndex) {
+    if (this.todoList[agendaIndex] && (this.todoList[agendaIndex].tasks.length > 0)) {
+      if (this.todoList[agendaIndex].tasks[taskIndex]) {
+        return true
+      }
+    }
+    return false
   }
 
   focusAFields(agendaIndex, field, id) {

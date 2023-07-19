@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, func, Date, ForeignKey
+from sqlalchemy import Column, Integer
 from sqlalchemy.ext.automap import automap_base
 from connect_db import ConnectDB
 
@@ -22,6 +22,7 @@ class comments(Base):
 
 engine = ConnectDB.createEngine()
 session = ConnectDB.makeSession(engine)
+# session = Session()
 
 Base.prepare(autoload_with=engine)
 

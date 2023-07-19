@@ -56,7 +56,7 @@ export class FlaskApiService {
   }
   
   // GET HIERARCHY .........................................................
-  public getHeirarchy(): Observable<any> {
+  public getHierarchy(): Observable<any> {
     return this.httpClient.post(this.baseUrl+'get_agenda_task_hierarchy', null)
   }
 

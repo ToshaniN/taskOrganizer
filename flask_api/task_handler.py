@@ -12,7 +12,7 @@ class TaskHandler:
             session.commit()
         except Exception as err:
             session.rollback()
-            response = {"errCode" : 2, "errMsg" : str(err)}
+            response = {"errCode" : 1, "errMsg" : str(err)}
             return response
         else:
             addedId = session.query(func.max(tasks.id)).first()
@@ -49,7 +49,7 @@ class TaskHandler:
             session.commit()
         except Exception as err:
             session.rollback()
-            response = {"errCode" : 2, "errMsg" : str(err)}
+            response = {"errCode" : 1, "errMsg" : str(err)}
             return response
         else:
             datarec = MakeResponse.createResponse(toDelete)
