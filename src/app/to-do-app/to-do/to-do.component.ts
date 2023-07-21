@@ -52,7 +52,17 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
                 "aStatusEditing": false,
               }];  
   
+  agendaInactivityTime:any
+  taskInactivityTime:any
 
+  //@Viewchild for side-container
+  @ViewChild('details', {static:false}) details: SideContainerComponent;
+  container_name = "";
+  agenda_index = 0;
+  task_index = 0;
+  newComment="";
+
+  // Options being displayed on view
   agendaStatusOptions = [
     {
       "value" : "notStarted",
@@ -122,23 +132,11 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   ]
 
-  //@Viewchild for side-container
-  @ViewChild('details', {static:false}) details: SideContainerComponent;
-  container_name = "";
-  agenda_index = 0;
-  task_index = 0;
-  newComment="";
-
-  agendaInactivityTime:any
-  taskInactivityTime:any
-
-  constructor(private fb:FormBuilder, 
-              private flask:FlaskApiService, 
-              private socket:SocketService, 
-              private env: EnvService, 
-              private changeDetector: ChangeDetectorRef) { }
+  constructor(private fb:FormBuilder, private flask:FlaskApiService, private socket:SocketService, 
+              private env: EnvService, private changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
+    // ngModel bound variables for when a new task/agenda is created
     this.newTaskForm = this.fb.group({
       newTitle: ['', [Validators.required]],
       newDate: ['', [Validators.required]],
@@ -146,43 +144,51 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       newAgendaName: ['', [Validators.required]]
     })
 
-    // Retrieves original view from database and saves it to the var that is displayed
-      let jsonPayload = {
-        "endpoint": 'get_agenda_task_hierarchy',
-        "httpMethod": "post",
-        "type": 'getHierarchy',
-        "payload": {}
-      }
-      let fromSocket:any
-      this.socket.dataIn(jsonPayload).then((reply) => {
-        fromSocket = reply
-        console.log("Event emitted (getHierarchy) and back in component. Info received: ", fromSocket)
-        if (fromSocket["errCode"] == 0) {
-          this.todoList = fromSocket["datarec"]
-          console.log("Success in getHierarchy: ", fromSocket)
-        } else {
-          console.log("Failure in getHierarchy: ", fromSocket)
-        }
-        
-      })
-      .catch((err) => {
-        console.error(err)
-        alert("An error occurred")
-      })
-      
-      // Subscription to socket to allow for multiuser updates
-      this.subscribeToObs()
+    // Get and display the initial view of the user's task organizer
+    this.getHierarchy()
+
+    // Subscribe to the observable that allows view updates in multi-user task organizers
+    this.subscribeToObs()
   }
 
+  // Use this to check for changes and avoid the ExpressionChangedAfterItHasBeenChecked error
   ngAfterContentChecked(): void {
     this.changeDetector.detectChanges();
   }
 
-// SOCKET METHODS ........................................................
+  // GET HIERARCHY ........................................................
+  // Retrieves values from database and saves it to todoList, which is then displayed by html file
+  getHierarchy() {
+    let jsonPayload = {
+      "endpoint": 'get_agenda_task_hierarchy',
+      "httpMethod": "post",
+      "type": 'getHierarchy',
+      "payload": {}
+    }
+    let fromSocket:any
+    this.socket.dataIn(jsonPayload).then((reply) => {
+      fromSocket = reply
+      console.log("Event emitted (getHierarchy) and back in component. Info received: ", fromSocket)
+      if (fromSocket["errCode"] == 0) {
+        this.todoList = fromSocket["datarec"]
+        console.log("Success in getHierarchy: ", fromSocket)
+      } else {
+        console.log("Failure in getHierarchy: ", fromSocket)
+      }
+      
+    })
+    .catch((err) => {
+      console.error(err)
+      alert("An error occurred")
+    })
+  }
+
+  // SOCKET METHODS ........................................................
+  // Subscription to socket observable to process received broadcasts and allow for multiuser updates
   subscribeToObs() {
     this.socket.evtResultObs.subscribe({
       next: (fromSocket) => {
-        if (fromSocket == null || fromSocket == 'transport close') {
+        if (fromSocket == null || !(fromSocket.hasOwnProperty("errCode")) ) {
           return
         }
         let eventName = fromSocket.type
@@ -197,6 +203,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     });
   }
 
+  // Events that are received in broadcast and view update functions that need to be run accordingly
   updateViewForEvt = {
     'taskAdded': (fromSocket) => {this.updateViewNewTask(fromSocket)},
     'taskUpdated': (fromSocket) => {this.updateViewUpdateTask(fromSocket)},
@@ -206,10 +213,11 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     'agendaDeleted': (fromSocket) => {this.updateViewDeleteAgenda(fromSocket)},
     'commentAdded': (fromSocket) => {this.updateViewNewComment(fromSocket)},
     'commentUpdated': (fromSocket) => {this.updateViewUpdateComment(fromSocket)},
-    'commentDeleted': (fromSocket) => {this.updateViewDeleteComment(fromSocket)}
+    'commentDeleted': (fromSocket) => {this.updateViewDeleteComment(fromSocket)},
+    'reconnected': (fromSocket) => {this.getHierarchy()}
   }
 
-
+  // New task added in another open tab, update self's view
   updateViewNewTask(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       this.todoList.find(i => i.id == fromSocket.datarec.task2agenda).tasks.push(fromSocket['datarec'])
@@ -219,6 +227,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // Task updated in another open tab, update self's view
   updateViewUpdateTask(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       let taskToUpdate = this.todoList.find(i => i.id == fromSocket.datarec.task2agenda).tasks.find(j => j.id == fromSocket.datarec.id)
@@ -231,6 +240,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // Task deleted in another open tab, update self's view
   updateViewDeleteTask(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       let agendaIndex = this.todoList.findIndex(i => i.id == fromSocket.datarec.task2agenda)
@@ -242,6 +252,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // New agenda added in another open tab, update self's view  
   updateViewNewAgenda(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       this.todoList.unshift(fromSocket['datarec'])
@@ -251,6 +262,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // Agenda updated in another open tab, update self's view
   updateViewUpdateAgenda(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       let agendaToUpdate = this.todoList.find(i => i.id == fromSocket.datarec.id)
@@ -263,6 +275,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // Agenda deleted in another open tab, update self's view
   updateViewDeleteAgenda(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       let agendaIndex = this.todoList.findIndex(i => i.id == fromSocket.datarec.id)
@@ -273,6 +286,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // New comment added in another open tab, update self's view
   updateViewNewComment(fromSocket) {
     if (fromSocket['errCode'] == 0 && fromSocket["datarec"].comment2task == this.todoList[this.agenda_index].tasks[this.task_index].id) {
       this.comments.push(fromSocket["datarec"])
@@ -282,6 +296,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // Comment updated in another open tab, update self's view
   updateViewUpdateComment(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       let commentToUpdate = this.comments.find(c => c.id == fromSocket.datarec.id)
@@ -294,6 +309,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // Comment deleted in another open tab, update self's view
   updateViewDeleteComment(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       let commentIndex = this.comments.findIndex(c => c.id == fromSocket.datarec.id)
@@ -326,19 +342,22 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   //......................................................................
 
   // TASK METHODS ........................................................
+  // Used to display the input fields when new task button is clicked
   displayTaskInputs(agendaIndex) {
     this.todoList[agendaIndex].wantNewTask = true;
   }
 
+  // Sets the task input fields' values back to empty
   resetTaskInputs() {
     this.newTitle.setValue("");
     this.newDate.setValue("");
     this.newPriority.setValue("");
   }
 
+  // Used to create a new task, add it to the database and the frontend todoList 
   createTask(agendaIndex) {
     console.log("Focus out triggered --> Creating new task now")
-    if (this.newTitle.valid) {
+    if (this.newTitle.valid) {    // the title cannot be empty
       let payload = {
         "task2agenda": this.todoList[agendaIndex].id,
         "title": this.newTitle.value,
@@ -367,18 +386,22 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
         alert("An error occurred")
       })
     }
+    // set fields to empty again and hide
     this.resetTaskInputs();
     this.todoList[agendaIndex].wantNewTask = false;
   }
 
-  
+
+  // Used to update the given task, both in the database and frontend view  
   updateTask(taskIndex, agendaIndex) {
     console.log("Updating task id: ", this.todoList[agendaIndex].tasks[taskIndex].id)
     let payload = {"id":this.todoList[agendaIndex].tasks[taskIndex].id}
-    if (payload.id != this.taskFieldCopy.id) {
+    // If the target task to edit and copied tasks do not have the same ids, return
+    if (payload.id != this.taskFieldCopy.id) { 
       console.log("Id of task copy != Id of update target")
       return
     }
+    // Add all the fields that were changed to the payload
     for (let key in this.taskFieldCopy) {
       if (key == 'title' && this.todoList[agendaIndex].tasks[taskIndex][key] == '') {
           alert("Please enter a title for the task")
@@ -389,7 +412,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
         payload[key] = this.todoList[agendaIndex].tasks[taskIndex][key]
       }
     }
-    if (Object.keys(payload).length === 1) { //only id present, no fields were edited
+    if (Object.keys(payload).length === 1) { // only id present, no fields were edited
       this.taskCopied = false
       return
     }
@@ -401,6 +424,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
     let errorOccurred = false
     let fromSocket:any
+    console.log("going to emit event")
     this.socket.dataIn(jsonPayload).then((reply) => {
       fromSocket = reply
       console.log("Event emitted (updateTask) and back in component. Info received: ", fromSocket)
@@ -425,6 +449,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   }
 
 
+  // Used to delete the given task, remove from frontend and set as inactive in database
   deleteTask(taskIndex, agendaIndex) {
     var answer = confirm("Do you want to delete this task?");
     if (answer) {
@@ -442,7 +467,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
         fromSocket = reply
         console.log("Event emitted (deleteTask) and back in component. Info received: ", fromSocket)
         if (fromSocket['errCode'] == 0) {
-          //hide inputs
+          // remove task from view
           this.todoList[agendaIndex].tasks.splice(taskIndex,1)
           console.log("Success in deleteTask: ", fromSocket)
         } else {
@@ -456,9 +481,12 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }    
   }
 
+
+  // Copies the given task when it has focus. Copied values are compared to new values in
+  //    updateTask to check which fields need to be sent in the payload
   copyTask(taskIndex, agendaIndex) {
     console.log("Copying task id: ", this.todoList[agendaIndex].tasks[taskIndex].id)
-    if (this.taskCopied) {
+    if (this.taskCopied) { // Recopying task might set unsaved values as 'previous values' --> lose actual previous vals
       console.log("Task id was already copied: ", this.todoList[agendaIndex].tasks[taskIndex].id)
       return
     }
@@ -469,6 +497,9 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     this.taskCopied = true
   }
 
+
+  // Fetches comments and opens the side container for selected task
+  //    Saves any previous unsaved changes made to the task before details button was clicked
   openDetails(taskIndex:number, agendaIndex:number) {
     this.agenda_index = agendaIndex;
     this.task_index = taskIndex;
@@ -499,17 +530,21 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.taskCopied = false
     }
     this.copyTask(taskIndex, agendaIndex)    //if task is already copied: fields except for description will get updated in next line
-    this.updateTask(taskIndex, agendaIndex)  //    if task had not been previously copied --> nothing to update --> update api will not be called
+    this.updateTask(taskIndex, agendaIndex)  //    if task had not been previously copied: nothing to update --> update api will not be called
     setTimeout(() => {this.details.openContainer()})
-    this.copyTask(taskIndex, agendaIndex)    //copying task again since clicking anywhere on sidecontainer will make task row lose focus --> clickedOutside triggered --> update api again
-  }
+    this.copyTask(taskIndex, agendaIndex)    //copying task again since clicking anywhere on sidecontainer will make task row lose focus
+  }                                          //    --> clickedOutside triggered --> update api again unnecessarily
 
+
+  // When a task field is clicked, it's going to change to edit mode. This fn turns the display into inputs and applies focus
   showAndFocus(agendaIndex, taskIndex, field, id) {
     this.todoList[agendaIndex].tasks[taskIndex][field] = true
     setTimeout(() => {
       document.getElementById(id).focus()});
   }
 
+
+  // Move from field to field for task/agenda
   tabToNext(tabPress, taskIndex, agendaIndex, nextField, nextFieldId) {
     tabPress.preventDefault()
     if (taskIndex != -1) {
@@ -523,16 +558,19 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+  // Update the task for any edited fields on enter
   onTaskEnter(taskIndex, agendaIndex) {
     this.updateTask(taskIndex, agendaIndex)
     this.copyTask(taskIndex, agendaIndex)
   }
 
+  // Update task title on keyup events
   onTaskKeyup(taskIndex, agendaIndex) {
     this.updateTaskWhileTyping(taskIndex, agendaIndex)
     this.updateTaskOnInactivity(taskIndex, agendaIndex)
   }
 
+  // Use a timeout to make regular updateTask calls while the user is typing
   updateTaskWhileTyping(taskIndex, agendaIndex) {
     console.log("updateTaskWhileTyping called")
     setTimeout(() => {
@@ -542,6 +580,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       }, 3000)
   } 
 
+  // Update the task on inactivity
   updateTaskOnInactivity(taskIndex, agendaIndex) {
     console.log("updateTaskOnInactivity called")
     clearTimeout(this.taskInactivityTime)
@@ -553,10 +592,12 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   //......................................................................
 
   // COMMENT METHODS .....................................................
+  // Display input field for comments when new comment button is clicked
   displayCommentInput() {
     this.todoList[this.agenda_index].tasks[this.task_index].wantNewComment = true;
   }
 
+  // Used to add a new comment to database and frontend
   addComment(taskIndex, agendaIndex) {
     if (this.newComment != "") {
       let commentToAdd = {"comment2task": this.todoList[agendaIndex].tasks[taskIndex].id,
@@ -584,10 +625,13 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
         alert("An error occurred")
       })
     }
+    // Reset input to empty and hide
     this.newComment = "";
     this.todoList[this.agenda_index].tasks[this.task_index].wantNewComment = false;
   }
 
+
+  // Used to update a comment in database and frontend  
   updateComment(commentIndex) {
     let payload = {"id":this.comments[commentIndex].id}
     console.log("Updating comment id: ", payload.id)
@@ -624,6 +668,8 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+
+  // Used to delete the selected comment --> remove from frontend view and set inactive in database
   deleteComment(commentIndex) {
     var answer = confirm("Do you want to delete this comment?");
     if (answer) {
@@ -653,6 +699,8 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+
+  // Copy specified comment --> used to compare with new values in updateComment
   copyComment(commentIndex) {
     console.log("Copying comment id: ", this.comments[commentIndex].id)
     for (let key in this.commentFieldCopy) {
@@ -664,10 +712,12 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
 
 
   // AGENDA METHODS ......................................................
+  // Display agenda name input field when new agenda button clicked
   displayAgendaInputs() {
     this.wantNewAgenda = true;
   }
-
+  
+  // Used to add an agenda in the database and frontend
   createAgenda() {
     if (this.newAgendaName.valid) {
       console.log("Creating new agenda")
@@ -699,6 +749,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   }
 
 
+  // Used to update agenda fields in database and frontend
   updateAgenda(agendaIndex) {
     let payload = {"id":this.todoList[agendaIndex].id}
     console.log("Updating agenda id: ", payload.id)
@@ -713,6 +764,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
           this.todoList[agendaIndex][key] = this.agendaFieldCopy[key]
           return
       }
+      // Add all edited fields to payload
       if (this.agendaFieldCopy[key] != this.todoList[agendaIndex][key]) {
         payload[key] = this.todoList[agendaIndex][key]
       }
@@ -753,6 +805,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   }
 
 
+  // Used to delete specified agenda --> remove from frontend and set inactive in database
   deleteAgenda(agendaIndex) {
     var answer = confirm("Do you want to delete this agenda?");
     if (answer) {
@@ -782,6 +835,9 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }
   }
 
+
+  // Copy the given agenda. Use as 'previous values' in updateAgenda to check which fields 
+  //     were updated.
   copyAgenda(agendaIndex) {
     console.log("Copying agenda id: ", this.todoList[agendaIndex].id)
     if (this.agendaCopied) {
@@ -794,6 +850,8 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     this.agendaCopied = true
   }
 
+
+  // A check to make sure that side-container only exists if that agenda and task exist
   agendaExists(agendaIndex, taskIndex) {
     if (this.todoList[agendaIndex] && (this.todoList[agendaIndex].tasks.length > 0)) {
       if (this.todoList[agendaIndex].tasks[taskIndex]) {
@@ -803,6 +861,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     return false
   }
 
+  // Apply focus on agenda field when it is clicked (go from display --> edit mode)
   focusAFields(agendaIndex, field, id) {
     this.todoList[agendaIndex][field] = true
     setTimeout(() => {
@@ -811,16 +870,19 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     )
   }
 
+  // Update changed agenda fields on enter
   onEnter(agendaIndex) {
     this.updateAgenda(agendaIndex)
     this.copyAgenda(agendaIndex)
   }
 
+  // Update agenda name on keyups
   onKeyup(agendaIndex) {
     this.updateAgendaWhileTyping(agendaIndex)
     this.updateAgendaOnInactivity(agendaIndex)
   }
 
+  // Update agenda on inactivity
   updateAgendaOnInactivity(agendaIndex) {
     console.log("updateAgendaOnInactivity called")
     clearTimeout(this.agendaInactivityTime)
@@ -830,6 +892,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     }, 1500)
   }
   
+  // Update agenda name regularly while user is typing
   updateAgendaWhileTyping(agendaIndex) {
     console.log("updateAgendaWhileTyping called")
     setTimeout(() => {

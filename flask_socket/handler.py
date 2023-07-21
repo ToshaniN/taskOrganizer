@@ -1,7 +1,7 @@
 from flask_socketio import emit
 from flask import request
 from db_interactions import DBInteractions
-import time
+from event_config import responseEventName
 
 class SocketHandler:
     # Acknowledgement..................................................
@@ -19,27 +19,11 @@ class SocketHandler:
         print("error message:" + request.event["message"])
         print("event arguments for error:" + request.event["args"])
     # .................................................................
-
-    responseEvtName = {
-        'newTask': 'taskAdded',
-        'updateTask': 'taskUpdated',
-        'deleteTask': 'taskDeleted',
-        'newAgenda': 'agendaAdded',
-        'updateAgenda': 'agendaUpdated',
-        'deleteAgenda': 'agendaDeleted',
-        'newComment': 'commentAdded',
-        'updateComment': 'commentUpdated',
-        'deleteComment': 'commentDeleted'
-    }
     
     def dataIn(fromClient):
         eventName = fromClient.pop('type')
-        # if (eventName == 'updateTask'):
-        #     print("Sleeping")
-        #     time.sleep(3)
-        #     print("Awake")
         response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
         if (eventName != 'getHierarchy' and eventName != 'getComments'):
-            response['type'] = SocketHandler.responseEvtName[eventName]
+            response['type'] = responseEventName[eventName]
             emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
         return response
