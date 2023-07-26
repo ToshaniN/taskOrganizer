@@ -98,3 +98,27 @@ p:hover, #AName h2:hover {
 #desText {
     width: 500px;
 }
+
+/* #pageTitle, #logOutButton {
+    display: inline-block;
+} */
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#pageTitle {
+    flex: 1;
+    text-align: center;
+    /* display: inline-block;
+    margin: 0 auto; width: 300px; */
+}
+
+#logOutButton {
+    /* display: inline-block; */
+    /* float: right; */
+    margin-right: 10px;
+}

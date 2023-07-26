@@ -1,0 +1,22 @@
+<body>
+    <h1>Login</h1>
+    <br>
+    <div>
+        <form [formGroup]="loginForm">
+            <div id="usernameBox">
+                <label>Username</label>
+                <br>
+                <input type="text" formControlName="username">
+            </div>
+            <br>
+            <div id="passwordBox">
+                <label>Password</label>
+                <br>
+                <input type="text" formControlName="password">
+            </div>
+            <br>
+            <button id="loginButton" (click)="toOrganizer()">Log in</button>
+        </form>
+    </div>
+    <br>
+</body>

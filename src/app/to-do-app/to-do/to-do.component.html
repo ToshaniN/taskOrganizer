@@ -1,21 +1,24 @@
 <body>
-    <h1>Task Organizer</h1>
+    <div class="header">
+        <h1 id="pageTitle">Task Organizer</h1>
+        <button id="logOutButton" (click)="disconnect()">Log out</button>
+    </div>
     <ul>
         <!--Create a new agenda button-->
-        <form [formGroup]="newTaskForm">
-            <div *ngIf="wantNewAgenda">
+        <form [formGroup]="newAgendaForm">
+            <div *ngIf="agendaConfig.wantNewAgenda">
                 <input type="text" placeholder="Agenda Name" formControlName="newAgendaName" (focusout)="createAgenda()" (keydown.enter)="createAgenda()">
             </div>
             <div>
-                <button type="button" id="addAgenda" [hidden]="wantNewAgenda" (click)="displayAgendaInputs()">New Agenda</button>
+                <button type="button" id="addAgenda" [hidden]="agendaConfig.wantNewAgenda" (click)="displayAgendaInputs()">New Agenda</button>
             </div>
         </form>
         <br>
         <!--For each agenda-->
-        <li *ngFor="let agenda of todoList;let agendaIndex = index;"> 
+        <li *ngFor="let agenda of agendaTaskHierarchy;let agendaIndex = index;"> 
             <div id="agendaHeader" appClickedOutside (clickedOutside)="updateAgenda(agendaIndex)" >
                 <div id="AName">
-                    <h2 (click)="focusAFields(agendaIndex, 'nameEditing', 'name'+agendaIndex)" [hidden]="agenda.nameEditing"> {{agenda.name}} </h2>
+                    <h2 (click)="focusAgendaFields(agendaIndex, 'nameEditing', 'name'+agendaIndex)" [hidden]="agenda.nameEditing"> {{agenda.name}} </h2>
                     <input #nameInput [id]="'name'+agendaIndex" [(ngModel)]="agenda.name" [hidden]="!agenda.nameEditing" 
                             (blur)="agenda.nameEditing=false" (focus)="copyAgenda(agendaIndex)"
                             (keydown.enter)="onEnter(agendaIndex); nameInput.blur()"
@@ -24,12 +27,12 @@
                 </div>
                 <div id="AStatus"> 
                     <h3 id="statusLabel">Status:</h3>
-                    <p id="statusVal" (click)="focusAFields(agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex);" [hidden]="agenda.aStatusEditing">{{agenda.agenda_status}}</p> 
+                    <p id="statusVal" (click)="focusAgendaFields(agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex);" [hidden]="agenda.aStatusEditing">{{agenda.agenda_status}}</p> 
                     <select #aStatusinput [id]="'agenda_status'+agendaIndex" [(ngModel)]="agenda.agenda_status" [hidden]="!agenda.aStatusEditing" 
                             (blur)="agenda.aStatusEditing=false"  (focus)="copyAgenda(agendaIndex)"
                             (keydown.enter)="onEnter(agendaIndex); aStatusinput.blur()"
                             (keydown.tab)="tabToNext($event, -1, agendaIndex, 'nameEditing', 'name'+agendaIndex)">
-                        <option *ngFor="let status of agendaStatusOptions">{{ status.name }}</option>
+                        <option *ngFor="let status of agendaConfig.agendaStatusOptions">{{ status.name }}</option>
                     </select>
                 </div>
                 <button id="deleteAgendaButton" type="button" (click)="deleteAgenda(agendaIndex)">&#x2716;</button>
@@ -70,7 +73,7 @@
                                     (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); priorInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)">
                                 <option value="" disabled selected>Priority</option>
-                                <option *ngFor="let p of priorityOptions">{{ p.name }}</option>
+                                <option *ngFor="let p of taskConfig.priorityOptions">{{ p.name }}</option>
                             </select> 
                         </td>
                         <td>
@@ -79,7 +82,7 @@
                                     (blur)="task.statusEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
                                     (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); statusInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)">
-                                <option *ngFor="let s of taskStatusOptions">{{ s.name }}</option>
+                                <option *ngFor="let s of taskConfig.taskStatusOptions">{{ s.name }}</option>
                             </select>    
                         </td>
                         <td> <!--Action buttons-->
@@ -92,18 +95,18 @@
             
             <!--Create new task button-->
             <form [formGroup]="newTaskForm">
-                <div id="taskInputs" *ngIf="agenda.wantNewTask" appClickedOutside (clickedOutside)="createTask(agendaIndex)" (keydown.enter)="createTask(agendaIndex)">
+                <div id="taskInputs" *ngIf="agenda.toggleNewTask" appClickedOutside (clickedOutside)="createTask(agendaIndex)" (keydown.enter)="createTask(agendaIndex)">
                     <input type="text" id="taskName" placeholder="Title" formControlName="newTitle">
                     <div id="taskInfo">
                         <input id="taskDate" type="datetime-local" placeholder="Due Date" formControlName="newDate">
                         <select id="taskPrior"  formControlName="newPriority">
                             <option value="" disabled selected>Priority</option>
-                            <option placeholder="priority" *ngFor="let p of priorityOptions">{{ p.name }}</option>
+                            <option placeholder="priority" *ngFor="let p of taskConfig.priorityOptions">{{ p.name }}</option>
                         </select>
                     </div>
                 </div>
                 <div>
-                    <button type="button" [hidden]="agenda.wantNewTask" id="addTask" name="addTask" (click)="displayTaskInputs(agendaIndex)">Add Task</button>
+                    <button type="button" [hidden]="agenda.toggleNewTask" id="addTask" name="addTask" (click)="displayTaskInputs(agendaIndex)">Add Task</button>
                 </div> 
                 <br><br>
             </form>
@@ -111,20 +114,20 @@
     </ul>
     <br><br>
 
-    <!--Description and Comments-->
-    <app-side-container #details [container_width]="600" [container_title]="container_name" [unique_id]="agenda_index+'_'+task_index" *ngIf="agendaExists(agenda_index, task_index)">
+    <!--Description and Comments agendaConfig.agenda_index+'_'+taskConfig.task_index-->
+    <app-side-container #sideContainer [container_width]="600" [container_title]="container_name" [unique_id]="1" *ngIf="agendaExists(agendaConfig.agenda_index, taskConfig.task_index)">
         <h4>Description</h4>
-        <textarea id="desText" [(ngModel)]="todoList[agenda_index].tasks[task_index].description" (focus)="copyTask(task_index, agenda_index)" 
-                  (focusout)="updateTask(task_index, agenda_index)"></textarea>
+        <textarea id="desText" [(ngModel)]="agendaTaskHierarchy[agendaConfig.agenda_index].tasks[taskConfig.task_index].description" (focus)="copyTask(taskConfig.task_index, agendaConfig.agenda_index)" 
+                  (focusout)="updateTask(taskConfig.task_index, agendaConfig.agenda_index)"></textarea>
         <h4>Comments</h4>
         <ul>
-            <li *ngFor="let comment of comments; let commentIndex = index">
+            <li *ngFor="let comment of commentConfig.comments; let commentIndex = index">
                 <textarea [(ngModel)]="comment.comment_text" (focus)="copyComment(commentIndex)" (focusout)="updateComment(commentIndex)"></textarea>
                 <button id="deleteCommentButton" type="button" (click)="deleteComment(commentIndex)">&#x2716;</button>
             </li>
-            <button name="addNewComment" type="button" [hidden]="todoList[agenda_index].tasks[task_index].wantNewComment" (click)="displayCommentInput()">New comment</button>
-            <input type="text" id="commentInput" *ngIf="todoList[agenda_index].tasks[task_index].wantNewComment" [(ngModel)]="newComment" 
-                    appClickedOutside (clickedOutside)="addComment(task_index, agenda_index)" (keydown.enter)="addComment(task_index, agenda_index)">
+            <button name="addNewComment" type="button" [hidden]="agendaTaskHierarchy[agendaConfig.agenda_index].tasks[taskConfig.task_index].wantNewComment" (click)="displayCommentInput()">New comment</button>
+            <input type="text" id="commentInput" *ngIf="agendaTaskHierarchy[agendaConfig.agenda_index].tasks[taskConfig.task_index].wantNewComment" [(ngModel)]="commentConfig.newComment" 
+                    appClickedOutside (clickedOutside)="addComment(taskConfig.task_index, agendaConfig.agenda_index)" (keydown.enter)="addComment(taskConfig.task_index, agendaConfig.agenda_index)">
         </ul>                       
     </app-side-container>    
 </body>
