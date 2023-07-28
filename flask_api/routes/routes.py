@@ -1,5 +1,5 @@
 from app import api
-from url_resource import *
+from resource.url_resource import *
 
 class Routes:
     api.add_resource(AgendaCreate, '/agenda/create')

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer
 from sqlalchemy.ext.automap import automap_base
-from connect_db import ConnectDB
+from session_maker.connect_db import ConnectDB
 
 Base = automap_base()
 
@@ -22,7 +22,6 @@ class comments(Base):
 
 engine = ConnectDB.createEngine()
 session = ConnectDB.makeSession(engine)
-# session = Session()
 
 Base.prepare(autoload_with=engine)
 

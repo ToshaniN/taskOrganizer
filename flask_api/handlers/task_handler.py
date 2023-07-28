@@ -1,31 +1,31 @@
-from database import comments, session
+from orm.database import tasks, session
 from sqlalchemy import func
-from makeResponse import MakeResponse
+from middleware.makeResponse import MakeResponse
 
-class CommentHandler:
-    def createNewComment(receivedInfo):
-        newComment = comments(status="Active")
+class TaskHandler:
+    def createNewTask(receivedInfo):
+        newTask = tasks(task_status="Open", status="Active")
         for key in receivedInfo:
-            setattr(newComment, key, receivedInfo[key])
+            setattr(newTask, key, receivedInfo[key])
         try:
-            session.add(newComment)
+            session.add(newTask)
             session.commit()
         except Exception as err:
             session.rollback()
             response = {"errCode" : 1, "errMsg" : str(err)}
             return response
         else:
-            addedId = session.query(func.max(comments.id)).first()
-            justAdded = session.query(comments).filter(comments.id==addedId[0]).first()
+            addedId = session.query(func.max(tasks.id)).first()
+            justAdded = session.query(tasks).filter(tasks.id==addedId[0]).first()
             datarec = MakeResponse.createResponse(justAdded)
             response = {"errCode":0,
                         "datarec": datarec}
         return response
     
 
-    def updateComment(receivedInfo):
+    def updateTask(receivedInfo):
         id = receivedInfo["id"]
-        toUpdate = session.query(comments).filter(comments.id==id).first()
+        toUpdate = session.query(tasks).filter(tasks.id==id).first()
         for key in receivedInfo:
             setattr(toUpdate, key, receivedInfo[key])
         try:
@@ -39,11 +39,11 @@ class CommentHandler:
             response = {"errCode":0, 
                         "datarec": datarec}
         return response
-    
 
-    def deleteComment(receivedInfo):
+        
+    def deleteTask(receivedInfo):
         id = receivedInfo["id"]
-        toDelete = session.query(comments).filter(comments.id==id).first()
+        toDelete = session.query(tasks).filter(tasks.id==id).first()
         toDelete.status = "Inactive"
         try:
             session.commit()
@@ -55,22 +55,4 @@ class CommentHandler:
             datarec = MakeResponse.createResponse(toDelete)
             response = {"errCode":0, 
                         "datarec": datarec}
-        return response
-
-
-    def getComments(receivedInfo):
-        comment2task = receivedInfo["comment2task"]
-        try:
-            commentList = session.query(comments).filter(comments.comment2task==comment2task, comments.status=="Active")
-        except Exception as err:
-            session.rollback()
-            response = {"errCode" : 1, "errMsg" : str(err)}
-            print(str(err))
-            return response
-        datarec = []
-        if commentList is not None:
-            for comment in commentList:
-                datarec.append(MakeResponse.createResponse(comment))
-        response = {"errCode":0, 
-                    "datarec": datarec}
         return response

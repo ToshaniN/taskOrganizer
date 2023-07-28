@@ -1,6 +1,6 @@
-from database import agendas, tasks, session
+from orm.database import agendas, tasks, session
 from sqlalchemy import func
-from makeResponse import MakeResponse
+from middleware.makeResponse import MakeResponse
 
 class AgendaTaskHandler:
     def createHierarchy():

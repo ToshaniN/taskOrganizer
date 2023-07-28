@@ -1,6 +1,6 @@
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy import create_engine
-import config
+from config import config
 from sqlalchemy.orm import scoped_session 
 
 connection_string = "mysql+mysqlconnector://" + config.connection['username'] + ':' + config.connection['password'] + "@localhost:3306/todolist"

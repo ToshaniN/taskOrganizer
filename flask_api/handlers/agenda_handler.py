@@ -1,31 +1,32 @@
-from database import tasks, session
+from orm.database import agendas, session
 from sqlalchemy import func
-from makeResponse import MakeResponse
+from middleware.makeResponse import MakeResponse
 
-class TaskHandler:
-    def createNewTask(receivedInfo):
-        newTask = tasks(task_status="Open", status="Active")
+class AgendaHandler:
+    def createNewAgenda(receivedInfo):
+        newAgenda = agendas(agenda_status="Not started", status="Active")
         for key in receivedInfo:
-            setattr(newTask, key, receivedInfo[key])
+            setattr(newAgenda, key, receivedInfo[key])
         try:
-            session.add(newTask)
+            session.add(newAgenda)
             session.commit()
         except Exception as err:
             session.rollback()
             response = {"errCode" : 1, "errMsg" : str(err)}
             return response
         else:
-            addedId = session.query(func.max(tasks.id)).first()
-            justAdded = session.query(tasks).filter(tasks.id==addedId[0]).first()
+            addedId = session.query(func.max(agendas.id)).first()
+            justAdded = session.query(agendas).filter(agendas.id==addedId[0]).first()
             datarec = MakeResponse.createResponse(justAdded)
+            datarec['tasks'] = []
             response = {"errCode":0,
                         "datarec": datarec}
         return response
     
 
-    def updateTask(receivedInfo):
+    def updateAgenda(receivedInfo):
         id = receivedInfo["id"]
-        toUpdate = session.query(tasks).filter(tasks.id==id).first()
+        toUpdate = session.query(agendas).filter(agendas.id==id).first()
         for key in receivedInfo:
             setattr(toUpdate, key, receivedInfo[key])
         try:
@@ -37,13 +38,13 @@ class TaskHandler:
         else:
             datarec = MakeResponse.createResponse(toUpdate)
             response = {"errCode":0, 
-                        "datarec": datarec}
+                        "datarec": datarec }   
         return response
+    
 
-        
-    def deleteTask(receivedInfo):
+    def deleteAgenda(receivedInfo):
         id = receivedInfo["id"]
-        toDelete = session.query(tasks).filter(tasks.id==id).first()
+        toDelete = session.query(agendas).filter(agendas.id==id).first()
         toDelete.status = "Inactive"
         try:
             session.commit()
@@ -55,4 +56,4 @@ class TaskHandler:
             datarec = MakeResponse.createResponse(toDelete)
             response = {"errCode":0, 
                         "datarec": datarec}
-        return response
+        return response 

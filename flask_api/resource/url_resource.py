@@ -1,7 +1,7 @@
-from agenda_handler import AgendaHandler
-from task_handler import TaskHandler
-from comment_handler import CommentHandler
-from agenda_task_handler import AgendaTaskHandler
+from handlers.agenda_handler import AgendaHandler
+from handlers.task_handler import TaskHandler
+from handlers.comment_handler import CommentHandler
+from handlers.agenda_task_handler import AgendaTaskHandler
 
 from flask_restful import Resource
 from flask import request
