@@ -32,7 +32,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
                       "description":"" },
     'taskCopied': false,
     'taskInactivityTime': null,
-    'task_index':null,
+    'task_index': -1,
     'taskStatusOptions': [
       {
         "value": "open",
@@ -85,7 +85,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     'agendaCopied': false,
     'wantNewAgenda': false,
     'agendaInactivityTime': null,
-    'agenda_index': null,
+    'agenda_index': -1,
     'agendaStatusOptions': [
       {
         "value" : "notStarted",
@@ -284,9 +284,11 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
 
   // New comment added in another open tab, update self's view
   onNewCommentEvent(fromSocket) {
-    if (fromSocket['errCode'] == 0 && fromSocket["datarec"].comment2task == this.agendaTaskHierarchy[this.agendaConfig.agenda_index].tasks[this.taskConfig.task_index].id) {
-      this.commentConfig.comments.push(fromSocket["datarec"])
-      console.log("Success in updateViewNewComment: ", fromSocket)
+    if (fromSocket['errCode'] == 0 && this.agendaConfig.agenda_index != -1) { // i.e. some side container is/has been opened
+      if (fromSocket["datarec"].comment2task == this.agendaTaskHierarchy[this.agendaConfig.agenda_index].tasks[this.taskConfig.task_index].id) {
+        this.commentConfig.comments.push(fromSocket["datarec"])
+        console.log("Success in updateViewNewComment: ", fromSocket)
+      }
     } else {
       console.log("Failure in updateViewNewComment: ", fromSocket)
     }
@@ -512,6 +514,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   // Fetches comments and opens the side container for selected task
   //    Saves any previous unsaved changes made to the task before details button was clicked
   openDetails(taskIndex:number, agendaIndex:number) {
+    // this.copyTask(taskIndex, agendaIndex)
     this.agendaConfig.agenda_index = agendaIndex;
     this.taskConfig.task_index = taskIndex;
     this.container_name = this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].title
@@ -546,6 +549,11 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.copyAgenda(agendaIndex)
       this.focusAgendaFields(agendaIndex, nextField, nextFieldId)
     }
+  }
+
+  taskEventListeners = {
+    "typing": (taskIndex, agendaIndex) => {this.onTaskKeyup(taskIndex, agendaIndex)},
+    "enter": (taskIndex, agendaIndex) => {this.onTaskEnter(taskIndex, agendaIndex)},
   }
 
   // Update the task for any edited fields on enter
@@ -585,6 +593,15 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   // Display input field for comments when new comment button is clicked
   displayCommentInput() {
     this.agendaTaskHierarchy[this.agendaConfig.agenda_index].tasks[this.taskConfig.task_index].wantNewComment = true;
+  }
+
+  validateExistingComment(commentIndex) {
+    if (this.commentConfig.comments[commentIndex].comment_text != '') {
+      return true
+    } else {
+      this.commentConfig.comments[commentIndex].comment_text = this.commentConfig.commentFieldCopy.comment_text
+      return false
+    }
   }
 
   getAllComments(taskIndex, agendaIndex) {
@@ -644,6 +661,10 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
 
   // Used to update a comment in database and frontend  
   updateComment(commentIndex) {
+    if (!this.validateExistingComment(commentIndex)) {
+      alert("Please enter text for comment")
+      return
+    }
     let payload = {"id":this.commentConfig.comments[commentIndex].id}
     console.log("Updating comment id: ", payload.id)
     if (this.commentConfig.commentFieldCopy.comment_text != this.commentConfig.comments[commentIndex].comment_text) {
@@ -886,10 +907,10 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     )
   }
 
-  // agendaUserEvents = {
-  //   "typing": (agendaIndex) => {this.onKeyup(agendaIndex)},
-  //   "enter":(agendaIndex) => {this.onEnter(agendaIndex)},
-  // }
+  agendaEventListeners = {
+    "typing": (agendaIndex) => {this.onKeyup(agendaIndex)},
+    "enter": (agendaIndex) => {this.onEnter(agendaIndex)},
+  }
 
   // Update changed agenda fields on enter
   onEnter(agendaIndex) {

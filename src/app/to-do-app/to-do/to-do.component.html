@@ -21,16 +21,16 @@
                     <h2 (click)="focusAgendaFields(agendaIndex, 'nameEditing', 'name'+agendaIndex)" [hidden]="agenda.nameEditing"> {{agenda.name}} </h2>
                     <input #nameInput [id]="'name'+agendaIndex" [(ngModel)]="agenda.name" [hidden]="!agenda.nameEditing" 
                             (blur)="agenda.nameEditing=false" (focus)="copyAgenda(agendaIndex)"
-                            (keydown.enter)="onEnter(agendaIndex); nameInput.blur()"
+                            (keydown.enter)="agendaEventListeners['enter'](agendaIndex); nameInput.blur()"
                             (keydown.tab)="tabToNext($event, -1, agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex)"
-                            (keyup)="onKeyup(agendaIndex)">                              
+                            (keyup)="agendaEventListeners['typing'](agendaIndex)">                              
                 </div>
                 <div id="AStatus"> 
                     <h3 id="statusLabel">Status:</h3>
                     <p id="statusVal" (click)="focusAgendaFields(agendaIndex, 'aStatusEditing', 'agenda_status'+agendaIndex);" [hidden]="agenda.aStatusEditing">{{agenda.agenda_status}}</p> 
                     <select #aStatusinput [id]="'agenda_status'+agendaIndex" [(ngModel)]="agenda.agenda_status" [hidden]="!agenda.aStatusEditing" 
                             (blur)="agenda.aStatusEditing=false"  (focus)="copyAgenda(agendaIndex)"
-                            (keydown.enter)="onEnter(agendaIndex); aStatusinput.blur()"
+                            (keydown.enter)="agendaEventListeners['enter'](agendaIndex); aStatusinput.blur()"
                             (keydown.tab)="tabToNext($event, -1, agendaIndex, 'nameEditing', 'name'+agendaIndex)">
                         <option *ngFor="let status of agendaConfig.agendaStatusOptions">{{ status.name }}</option>
                     </select>
@@ -55,22 +55,22 @@
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)" [hidden]="task.titleEditing">{{task.title}}</p>
                             <input #titleInput [id]="'title_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.title" [hidden]="!task.titleEditing" 
                                     (blur)="task.titleEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
-                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); titleInput.blur()"
+                                    (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); titleInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)"
-                                    (keyup)="onTaskKeyup(taskIndex, agendaIndex)">
+                                    (keyup)="taskEventListeners['typing'](taskIndex, agendaIndex)">
                         </td>
                         <td>
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)" [hidden]="task.dateEditing">{{task.due_date}}</p>
                             <input #dateInput [id]="'due_date_'+agendaIndex+'_'+taskIndex" type="datetime-local" [(ngModel)]="task.due_date" [hidden]="!task.dateEditing" 
                                     (blur)="task.dateEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
-                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); dateInput.blur()"
+                                    (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); dateInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)">
                         </td>
                         <td>
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)" [hidden]="task.priorityEditing">{{task.priority}}</p>
                             <select #priorInput [id]="'priority_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.priority" [hidden]="!task.priorityEditing" 
                                     (blur)="task.priorityEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
-                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); priorInput.blur()"
+                                    (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); priorInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)">
                                 <option value="" disabled selected>Priority</option>
                                 <option *ngFor="let p of taskConfig.priorityOptions">{{ p.name }}</option>
@@ -80,7 +80,7 @@
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)" [hidden]="task.statusEditing">{{task.task_status}}</p>
                             <select #statusInput [id]="'task_status_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.task_status" [hidden]="!task.statusEditing" 
                                     (blur)="task.statusEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
-                                    (keydown.enter)="onTaskEnter(taskIndex, agendaIndex); statusInput.blur()"
+                                    (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); statusInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)">
                                 <option *ngFor="let s of taskConfig.taskStatusOptions">{{ s.name }}</option>
                             </select>    
