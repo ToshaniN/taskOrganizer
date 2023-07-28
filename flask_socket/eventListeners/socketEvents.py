@@ -1,7 +1,7 @@
 from app import socketio
-from handler import SocketHandler
+from handler.socket_event_handler import SocketHandler
 
-class SocketRoutes:
+class SocketEvents:
     socketio.on_event('connect', SocketHandler.connected)
     socketio.on_event('disconnect', SocketHandler.disconnected)
     socketio.on_error(SocketHandler.error_handler)

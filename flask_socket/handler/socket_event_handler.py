@@ -1,7 +1,7 @@
 from flask_socketio import emit
 from flask import request
-from db_interactions import DBInteractions
-from event_config import responseEventName
+from middleware.response_parser import ResponseParser
+from socket_server_config.event_config import responseEventName
 
 class SocketHandler:
     # Acknowledgement..................................................
@@ -22,7 +22,7 @@ class SocketHandler:
     
     def dataIn(fromClient):
         eventName = fromClient.pop('type')
-        response = DBInteractions.getResponse(fromClient["payload"], fromClient["endpoint"])
+        response = ResponseParser.getResponse(fromClient["payload"], fromClient["endpoint"])
         if (eventName != 'getHierarchy' and eventName != 'getComments'):
             response['type'] = responseEventName[eventName]
             emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)

@@ -7,4 +7,4 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 CORS(app, supports_credentials = True)
 
-import routes
+from eventListeners import socketEvents

@@ -1,25 +1,12 @@
-from socket_config import apiURL, useFlaskApi
-import httpx
 import sys
 sys.path.insert(0, 'C:/Users/tosha/Documents/Github repos/taskOrganizer/flask_api')
-from task_handler import TaskHandler
-from agenda_handler import AgendaHandler
-from comment_handler import CommentHandler
-from agenda_task_handler import AgendaTaskHandler
+from handlers.task_handler import TaskHandler
+from handlers.agenda_handler import AgendaHandler
+from handlers.comment_handler import CommentHandler
+from handlers.agenda_task_handler import AgendaTaskHandler
 
-class DBInteractions:
-    def getResponse(payload, endpoint):
-        if (useFlaskApi):
-            return DBInteractions.makeApiRequest(payload, endpoint)
-        else:
-            return DBInteractions.callHandlerFunction[endpoint](payload)
-
-    def makeApiRequest(payload, endpoint):
-        url = apiURL + endpoint
-        response = httpx.post(url, json=payload)
-        return response.json()
-    
-    callHandlerFunction = {
+class ServiceHandler:
+    socketEventOperations = {
         'task/create': (lambda payload: TaskHandler.createNewTask(payload)),
         'task/update': (lambda payload: TaskHandler.updateTask(payload)),
         'task/delete': (lambda payload: TaskHandler.deleteTask(payload)),
