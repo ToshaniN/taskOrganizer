@@ -3,6 +3,30 @@
         <h1 id="pageTitle">Task Organizer</h1>
         <button id="logOutButton" (click)="disconnect()">Log out</button>
     </div>
+    <!-- Remove later -->
+    <!-- <li *ngFor="let person of formTestingList">
+        <div>
+            <p>Name: {{person.name}}</p>
+            <p>Age: {{person.age}}</p>
+        </div>
+        <form [formGroup]="reactive_form">
+            <p>Reactive form</p>
+            <input type="text" placeholder="Name" formControlName="name">
+            <input type="number" placeholder="Age" formControlName="age">
+            <button type="button" (click)="addPersonReactive()">Add Person</button>
+        </form>
+        <br>
+        <p>{{reactive_form.get('name').value}}</p>
+        <p>{{reactive_form.get('age').value}}</p>
+        <form #templateForm="ngForm">
+            <p>Template form</p>
+            <input type="text" placeholder="Name" name="personName" [(ngModel)]="template_form.name">
+            <input type="number" placeholder="Age" name="personAge" [(ngModel)]="template_form.age">
+            <button type="button" (click)="addPersonTemplate()">Add Person</button>
+        </form>
+    </li> -->
+    <!-- Remove later -->
+
     <ul>
         <!--Create a new agenda button-->
         <form [formGroup]="newAgendaForm">
@@ -50,11 +74,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" appClickedOutside (clickedOutside)="updateTask(taskIndex, agendaIndex)">
+                    <tr name="rows" *ngFor="let task of agenda.tasks; let taskIndex = index;" appClickedOutside (clickedOutside)="updateTask(taskIndex, agendaIndex)" (click)="rowInFocus(taskIndex, agendaIndex)">
                         <td>
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)" [hidden]="task.titleEditing">{{task.title}}</p>
                             <input #titleInput [id]="'title_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.title" [hidden]="!task.titleEditing" 
-                                    (blur)="task.titleEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (blur)="task.titleEditing=false"   
                                     (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); titleInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)"
                                     (keyup)="taskEventListeners['typing'](taskIndex, agendaIndex)">
@@ -62,14 +86,14 @@
                         <td>
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'dateEditing', 'due_date_'+agendaIndex+'_'+taskIndex)" [hidden]="task.dateEditing">{{task.due_date}}</p>
                             <input #dateInput [id]="'due_date_'+agendaIndex+'_'+taskIndex" type="datetime-local" [(ngModel)]="task.due_date" [hidden]="!task.dateEditing" 
-                                    (blur)="task.dateEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (blur)="task.dateEditing=false"   
                                     (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); dateInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)">
                         </td>
                         <td>
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'priorityEditing', 'priority_'+agendaIndex+'_'+taskIndex)" [hidden]="task.priorityEditing">{{task.priority}}</p>
                             <select #priorInput [id]="'priority_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.priority" [hidden]="!task.priorityEditing" 
-                                    (blur)="task.priorityEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (blur)="task.priorityEditing=false"   
                                     (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); priorInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)">
                                 <option value="" disabled selected>Priority</option>
@@ -79,15 +103,15 @@
                         <td>
                             <p (click)="showAndFocus(agendaIndex, taskIndex, 'statusEditing', 'task_status_'+agendaIndex+'_'+taskIndex)" [hidden]="task.statusEditing">{{task.task_status}}</p>
                             <select #statusInput [id]="'task_status_'+agendaIndex+'_'+taskIndex" [(ngModel)]="task.task_status" [hidden]="!task.statusEditing" 
-                                    (blur)="task.statusEditing=false"  (focus)="copyTask(taskIndex, agendaIndex)" 
+                                    (blur)="task.statusEditing=false"  
                                     (keydown.enter)="taskEventListeners['enter'](taskIndex, agendaIndex); statusInput.blur()"
                                     (keydown.tab)="tabToNext($event, taskIndex, agendaIndex, 'titleEditing', 'title_'+agendaIndex+'_'+taskIndex)">
                                 <option *ngFor="let s of taskConfig.taskStatusOptions">{{ s.name }}</option>
                             </select>    
                         </td>
                         <td> <!--Action buttons-->
-                            <button id="detailsButton" type="button" (click)="openDetails(taskIndex, agendaIndex)">&#x2631;</button> <!--261A 2631 27B5 -->
-                            <button id="deleteTaskButton" type="button" (click)="deleteTask(taskIndex, agendaIndex)">&#x2716;</button> <!-- 2716  274C-->
+                            <button id="detailsButton" type="button" (click)="openDetails(taskIndex, agendaIndex)">&#x2631;</button>
+                            <button id="deleteTaskButton" type="button" (click)="deleteTask(taskIndex, agendaIndex)">&#x2716;</button>
                         </td>
                     </tr>
                 </tbody>
@@ -114,7 +138,7 @@
     </ul>
     <br><br>
 
-    <!--Description and Comments agendaConfig.agenda_index+'_'+taskConfig.task_index-->
+    <!--Description and Comments-->
     <app-side-container #sideContainer [container_width]="600" [container_title]="container_name" [unique_id]="1" *ngIf="agendaExists(agendaConfig.agenda_index, taskConfig.task_index)">
         <h4>Description</h4>
         <textarea id="desText" [(ngModel)]="agendaTaskHierarchy[agendaConfig.agenda_index].tasks[taskConfig.task_index].description" (focus)="copyTask(taskConfig.task_index, agendaConfig.agenda_index)" 

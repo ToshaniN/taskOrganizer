@@ -3,7 +3,6 @@ import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { SocketService } from '../../socket.service';
 import { Router } from '@angular/router';
-import { fromIterable } from 'rxjs/internal-compatibility';
 
 @Component({
   selector: 'app-to-do',
@@ -113,6 +112,47 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   constructor(private fb:FormBuilder, private socket:SocketService, 
               private changeDetector: ChangeDetectorRef, private router: Router) { }
 
+  // reactive_form: FormGroup ///////////
+  // template_form = { name: '',
+  //                   age: null
+  // }
+  // formTestingList = [
+  //   { id: 1,
+  //     name: 'name 1',
+  //     age: 3
+  //   },
+  //   { id: 2,
+  //     name: 'name 2',
+  //     age: 14
+  //   },
+  //   { id: 3,
+  //     name: 'name 3',
+  //     age: 38
+  //   }
+  // ]
+
+  // addPersonReactive() {
+  //   let person = {
+  //     id: this.formTestingList[this.formTestingList.length - 1].id + 1, 
+  //     name: this.reactive_form.get('name').value,
+  //     age: this.reactive_form.get('age').value
+  //   }
+  //   this.formTestingList.push(person)
+  //   this.reactive_form.get('name').setValue('')
+  //   this.reactive_form.get('age').setValue(null)
+  // }
+
+  // addPersonTemplate() {
+  //   let person = {
+  //     id: this.formTestingList[this.formTestingList.length - 1].id + 1, 
+  //     name: this.template_form.name,
+  //     age: this.template_form.age
+  //   }
+  //   this.formTestingList.push(person)
+  //   this.template_form.name = ''
+  //   this.template_form.age = null
+  // }
+  
   ngOnInit() {
     this.taskFormInit()
     this.agendaFormInit()
@@ -122,6 +162,11 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
 
     // Subscribe to the observable that allows view updates in multi-user task organizers
     this.socketServerEvtSub()
+
+    // this.reactive_form = this.fb.group({
+    //   name: [''],
+    //   age: ['']
+    // })
   }
 
   // Use this to check for changes and avoid the ExpressionChangedAfterItHasBeenChecked error
@@ -421,11 +466,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   // Used to update the given task, both in the database and frontend view  
   updateTask(taskIndex, agendaIndex) {
     console.log("Updating task id: ", this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id)
-    // If the target task to edit and copied tasks do not have the same ids, return
-    if (this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id != this.taskConfig.taskFieldCopy.id) { 
-      console.log("Id of task copy != Id of update target")
-      return
-    }
+    console.log("Copied task id: ", this.taskConfig.taskFieldCopy.id)
     if (!this.validateExistingTask(taskIndex, agendaIndex)) {
       alert("Please enter a title for the task")
       return
@@ -499,7 +540,10 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   //    updateTask to check which fields need to be sent in the payload
   copyTask(taskIndex, agendaIndex) {
     console.log("Copying task id: ", this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id)
-    if (this.taskConfig.taskCopied) { // Recopying task might set unsaved values as 'previous values' --> lose actual previous vals
+    // Recopying task might set unsaved values as 'previous values' --> lose actual previous vals
+    // This checks if task is copied AND if the copied task is the same as the one referred to by the indices
+    if (this.taskConfig.taskCopied && 
+        (this.taskConfig.taskFieldCopy.id == this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id)) {
       console.log("Task id was already copied: ", this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id)
       return
     }
@@ -510,11 +554,16 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     this.taskConfig.taskCopied = true
   }
 
+  // Called when an existing task row gains focus
+  //   --> waits for a bit and then calls copy task for the row that just gained focus, so that there is time for clickedOutside
+  //       to be triggered for the prev row (that lost focus) 
+  rowInFocus(taskIndex, agendaIndex) {
+    setTimeout(() => {this.copyTask(taskIndex, agendaIndex)})
+  }
 
   // Fetches comments and opens the side container for selected task
   //    Saves any previous unsaved changes made to the task before details button was clicked
   openDetails(taskIndex:number, agendaIndex:number) {
-    // this.copyTask(taskIndex, agendaIndex)
     this.agendaConfig.agenda_index = agendaIndex;
     this.taskConfig.task_index = taskIndex;
     this.container_name = this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].title
@@ -522,11 +571,8 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     if (this.taskConfig.taskCopied == true && this.taskConfig.taskFieldCopy.id != this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id){
       this.taskConfig.taskCopied = false
     }
-    this.copyTask(taskIndex, agendaIndex)    //if task is already copied: fields except for description will get updated in next line
-    this.updateTask(taskIndex, agendaIndex)  //    if task had not been previously copied: nothing to update --> update api will not be called
     setTimeout(() => {this.sideContainer.openContainer()})
-    this.copyTask(taskIndex, agendaIndex)    //copying task again since clicking anywhere on sidecontainer will make task row lose focus
-  }                                          //    --> clickedOutside triggered --> update api again unnecessarily
+  }
 
 
   // When a task field is clicked, it's going to change to edit mode. This fn turns the display into inputs and applies focus
