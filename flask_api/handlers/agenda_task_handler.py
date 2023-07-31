@@ -4,6 +4,7 @@ from middleware.makeResponse import MakeResponse
 
 class AgendaTaskHandler:
     def createHierarchy():
+        # Find the active agendas and all of there active tasks (if any)
         try:
             joined = session.query(agendas, func.group_concat(tasks.id)).outerjoin(tasks, (agendas.id == tasks.task2agenda) & 
                                                                                       (tasks.status == "Active")).filter(agendas.status == "Active").group_by(agendas).all()
@@ -12,7 +13,7 @@ class AgendaTaskHandler:
             response = {"errCode" : 1, "errMsg" : str(err)}
             print(str(err))
             return response
-        
+        # Create the response in a hierarchy format to return
         response = []
         for agenda, taskList in joined:
             agendaToAdd = MakeResponse.createResponse(agenda)

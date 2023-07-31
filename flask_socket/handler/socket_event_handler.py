@@ -5,7 +5,7 @@ from socket_server_config.event_config import responseEventName
 
 class SocketHandler:
     # Acknowledgement..................................................
-    def ack(message):
+    def ack(self, message):
         print(message)
 
     # Built-in.........................................................
@@ -20,10 +20,11 @@ class SocketHandler:
         print("event arguments for error:" + request.event["args"])
     # .................................................................
     
-    def dataIn(fromClient):
+    # Received from client.............................................
+    def dataIn(self, fromClient):
         eventName = fromClient.pop('type')
-        response = ResponseParser.getResponse(fromClient["payload"], fromClient["endpoint"])
+        response = ResponseParser().getResponse(fromClient["payload"], fromClient["endpoint"])
         if (eventName != 'getHierarchy' and eventName != 'getComments'):
             response['type'] = responseEventName[eventName]
-            emit('dataOut', response, callback=SocketHandler.ack, broadcast=True, include_self=False)
+            emit('dataOut', response, callback=self.ack, broadcast=True, include_self=False)
         return response

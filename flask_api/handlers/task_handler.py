@@ -5,6 +5,7 @@ from middleware.makeResponse import MakeResponse
 class TaskHandler:
     def createNewTask(receivedInfo):
         newTask = tasks(task_status="Open", status="Active")
+        # Set the provided fields for the new task
         for key in receivedInfo:
             setattr(newTask, key, receivedInfo[key])
         try:
@@ -15,6 +16,7 @@ class TaskHandler:
             response = {"errCode" : 1, "errMsg" : str(err)}
             return response
         else:
+            # Create the response using the latest added task in the db
             addedId = session.query(func.max(tasks.id)).first()
             justAdded = session.query(tasks).filter(tasks.id==addedId[0]).first()
             datarec = MakeResponse.createResponse(justAdded)

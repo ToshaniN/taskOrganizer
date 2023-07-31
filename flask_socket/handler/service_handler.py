@@ -6,6 +6,7 @@ from handlers.comment_handler import CommentHandler
 from handlers.agenda_task_handler import AgendaTaskHandler
 
 class ServiceHandler:
+    # This maps the endpoints to the CRUD function that needs to be called from flask_api 
     socketEventOperations = {
         'task/create': (lambda payload: TaskHandler.createNewTask(payload)),
         'task/update': (lambda payload: TaskHandler.updateTask(payload)),
