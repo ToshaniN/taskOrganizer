@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterContentChecked } from '@angular/core';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
-import { SocketService } from '../../socket.service';
+import { SocketService, Payload } from '../../socket.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -110,48 +110,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   }
 
   constructor(private fb:FormBuilder, private socket:SocketService, 
-              private changeDetector: ChangeDetectorRef, private router: Router) { }
-
-  // reactive_form: FormGroup ///////////
-  // template_form = { name: '',
-  //                   age: null
-  // }
-  // formTestingList = [
-  //   { id: 1,
-  //     name: 'name 1',
-  //     age: 3
-  //   },
-  //   { id: 2,
-  //     name: 'name 2',
-  //     age: 14
-  //   },
-  //   { id: 3,
-  //     name: 'name 3',
-  //     age: 38
-  //   }
-  // ]
-
-  // addPersonReactive() {
-  //   let person = {
-  //     id: this.formTestingList[this.formTestingList.length - 1].id + 1, 
-  //     name: this.reactive_form.get('name').value,
-  //     age: this.reactive_form.get('age').value
-  //   }
-  //   this.formTestingList.push(person)
-  //   this.reactive_form.get('name').setValue('')
-  //   this.reactive_form.get('age').setValue(null)
-  // }
-
-  // addPersonTemplate() {
-  //   let person = {
-  //     id: this.formTestingList[this.formTestingList.length - 1].id + 1, 
-  //     name: this.template_form.name,
-  //     age: this.template_form.age
-  //   }
-  //   this.formTestingList.push(person)
-  //   this.template_form.name = ''
-  //   this.template_form.age = null
-  // }
+              private changeDetector: ChangeDetectorRef, private router: Router) { } 
   
   ngOnInit() {
     this.taskFormInit()
@@ -162,11 +121,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
 
     // Subscribe to the observable that allows view updates in multi-user task organizers
     this.socketServerEvtSub()
-
-    // this.reactive_form = this.fb.group({
-    //   name: [''],
-    //   age: ['']
-    // })
+    
   }
 
   // Use this to check for changes and avoid the ExpressionChangedAfterItHasBeenChecked error
@@ -437,12 +392,13 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
         ...((this.newDate.value != '') && {due_date: this.newDate.value}),
         ...((this.newPriority.value != '') && {priority: this.newPriority.value})  
       }
-      let jsonNewTask = {
+      let jsonNewTask: Payload = {
         "endpoint": 'task/create',
         "httpMethod": "post",
         "type": 'newTask',
         "payload": payload
       }
+      // this.socket.newTaskDataIn(jsonNewTask)
       this.socket.dataIn(jsonNewTask).then((acknowledgement) => {
         console.log("Event emitted (createTask) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {
@@ -477,30 +433,30 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.taskConfig.taskCopied = false
       return
     }
-    let jsonPayload = {
+    let jsonPayload: Payload = {
       "endpoint": 'task/update',
       "httpMethod": "post",
       "type": 'updateTask',
       "payload": payload
     } 
-    let errorOccurred = false
+    // let errorOccurred = false
     this.socket.dataIn(jsonPayload).then((acknowledgement) => {
       console.log("Event emitted (updateTask) and back in component. Info received: ", acknowledgement)
       if (acknowledgement['errCode'] == 0) {
         console.log("Success in updateTask: ", acknowledgement)
       } else {
         console.log("Failure in updateTask: ", acknowledgement)
-        errorOccurred = true
+        this.revertTaskToPreviousState(taskIndex, agendaIndex)
       }
     })
     .catch((err) => {
       console.error(err)
-      errorOccurred = true
+      this.revertTaskToPreviousState(taskIndex, agendaIndex)
       alert("An error occurred")
     })
-    if (errorOccurred) { //return edits to previous value
-      this.revertTaskToPreviousState(taskIndex, agendaIndex)
-    }
+    // if (eventOccurred) { //return edits to previous value
+    //   this.revertTaskToPreviousState(taskIndex, agendaIndex)
+    // }
     this.taskConfig.taskCopied = false
   }
 
@@ -512,7 +468,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       let id = this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id
       let payload = {"id": id}
       console.log("Deleting task id: ", id)
-      let jsonPayload = {
+      let jsonPayload: Payload = {
         "endpoint":'task/delete',
         "httpMethod": "post",
         "type": 'deleteTask',
@@ -652,7 +608,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
 
   getAllComments(taskIndex, agendaIndex) {
     let payload = {"comment2task": this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id}
-    let jsonPayload = {
+    let jsonPayload: Payload = {
       "endpoint":'comment/get_all',
       "httpMethod": "post",
       "type": 'getComments',
@@ -679,7 +635,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       let commentToAdd = {"comment2task": this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id,
                           "comment_text": this.commentConfig.newComment }
       console.log("Adding a new comment for task id: ", commentToAdd.comment2task)
-      let jsonPayload = {
+      let jsonPayload: Payload = {
         "endpoint":'comment/add',
         "httpMethod": "post",
         "type": 'newComment',
@@ -718,8 +674,8 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     } else {
       return //nothing was changed
     }
-    let errorOccurred = false
-    let jsonPayload = {
+    // let errorOccurred = false
+    let jsonPayload: Payload = {
       "endpoint":'comment/update',
       "httpMethod": "post",
       "type": 'updateComment',
@@ -730,18 +686,18 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       if (acknowledgement['errCode'] == 0) {
         console.log("Success in updateComment: ", acknowledgement)
       } else {
-        errorOccurred = true
+        this.commentConfig.comments[commentIndex].comment_text = this.commentConfig.commentFieldCopy.comment_text
         console.log("Failure in updateComment: ", acknowledgement)
       }
     })
     .catch((err) => {
       console.error(err)
-      errorOccurred = true
+      this.commentConfig.comments[commentIndex].comment_text = this.commentConfig.commentFieldCopy.comment_text
       alert("An error occurred")
     })
-    if (errorOccurred) { //return edits to previous value
-        this.commentConfig.comments[commentIndex].comment_text = this.commentConfig.commentFieldCopy.comment_text   
-    }
+    // if (errorOccurred) { //return edits to previous value
+    //   this.commentConfig.comments[commentIndex].comment_text = this.commentConfig.commentFieldCopy.comment_text   
+    // }
   }
 
 
@@ -751,7 +707,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     if (answer) {
       let payload = {"id": this.commentConfig.comments[commentIndex].id}
       console.log("Deleting comment id: ", payload.id)
-      let jsonPayload = {
+      let jsonPayload: Payload = {
         "endpoint":'comment/remove',
         "httpMethod": "post",
         "type": 'deleteComment',
@@ -821,7 +777,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     if (this.newAgendaName.valid) {
       console.log("Creating new agenda")
       let payload = {"name": this.newAgendaName.value}
-      let jsonPayload = {
+      let jsonPayload: Payload = {
         "endpoint": 'agenda/create',
         "httpMethod": "post",
         "type": 'newAgenda',
@@ -862,30 +818,30 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.agendaConfig.agendaCopied = false
       return
     }
-    let jsonPayload = {
+    let jsonPayload: Payload = {
       "endpoint": 'agenda/update',
       "httpMethod": "post",
       "type": 'updateAgenda',
       "payload": payload
     }
-    let errorOccurred = false
+    // let errorOccurred = false
     this.socket.dataIn(jsonPayload).then((acknowledgement) => {
       console.log("Event emitted (updateAgenda) and back in component. Info received: ", acknowledgement)
       if (acknowledgement['errCode'] == 0) {
         console.log("Success in updateAgenda: ", acknowledgement)
       } else {
-        errorOccurred = true
+        this.revertAgendaToPreviousState(agendaIndex)
         console.log("Failure in updateAgenda: ", acknowledgement)
       }
     })
     .catch((err) => {
       console.error(err)
-      errorOccurred = true
+      this.revertAgendaToPreviousState(agendaIndex)
       alert("An error occurred")
     })
-    if (errorOccurred) { //return edits to previous value
-      this.revertAgendaToPreviousState(agendaIndex)
-    }
+    // if (errorOccurred) { //return edits to previous value
+    //   this.revertAgendaToPreviousState(agendaIndex)
+    // }
     this.agendaConfig.agendaCopied = false
   }
 
@@ -896,7 +852,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     if (answer) {
       let payload = {"id": this.agendaTaskHierarchy[agendaIndex].id}
       console.log("Deleting agenda id: ", payload.id)
-      let jsonPayload = {
+      let jsonPayload: Payload = {
         "endpoint": 'agenda/delete',
         "httpMethod": "post",
         "type": 'deleteAgenda',

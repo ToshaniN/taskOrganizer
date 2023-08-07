@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0, 'C:/Users/tosha/Documents/Github repos/taskOrganizer/flask_api')
+sys.path.insert(0, 'C:/Users/tosha/Documents/Github repos/taskOrganizer/backend/flask_api')
+# sys.path.insert(0, '/api_handlers')
 from handlers.task_handler import TaskHandler
 from handlers.agenda_handler import AgendaHandler
 from handlers.comment_handler import CommentHandler

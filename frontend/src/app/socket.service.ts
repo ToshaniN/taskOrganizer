@@ -3,6 +3,13 @@ import { EnvService } from './env.service';
 import { io, Socket } from 'socket.io-client';
 import { Subject } from 'rxjs';
 
+export interface Payload {
+  endpoint:string;
+  httpMethod:string;
+  type:string;
+  payload:any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,6 +36,7 @@ export class SocketService {
   // Initializes the socket, connects to it, and calls functions to set up the event listeners
   connectSocket() {
     this.io = io(this.env.socketUrl, this.ioOptionsConfig)
+    console.log("io configured with url: ", this.env.socketUrl)
     this.io.connect()
     this.checkSocketEvents()
     this.checkCustomEvents()
@@ -90,16 +98,15 @@ export class SocketService {
   }
 
   // Emits events with given payload to the socket server and returns the response
-  dataIn(payload) {
+  dataIn(payload:Payload) {
     return new Promise((resolve) => {
+      console.log("Emmiting event")
       this.io.emit('dataIn', payload, (response) => {
         console.log("Response received from server in dataIn", response)
         resolve(response)
       })
     })
   }
- 
-
 
   // All the events that are being monitored and the actions that need to be performed
   //     when they occur

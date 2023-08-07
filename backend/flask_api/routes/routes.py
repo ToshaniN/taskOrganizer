@@ -1,5 +1,5 @@
 from app import api
-from resource.url_resource import *
+from resources.url_resource import *
 
 class Routes:
     # Agenda CRUD endpoints

@@ -24,7 +24,16 @@ class SocketHandler:
     def dataIn(self, fromClient):
         eventName = fromClient.pop('type')
         response = ResponseParser().getResponse(fromClient["payload"], fromClient["endpoint"])
+        # if (eventName == 'newTask'):
+        #     SocketHandler.newTaskDataIn(fromClient)
+        # else:
         if (eventName != 'getHierarchy' and eventName != 'getComments'):
             response['type'] = responseEventName[eventName]
             emit('dataOut', response, callback=self.ack, broadcast=True, include_self=False)
         return response
+    
+
+    # def newTaskDataIn(fromClient):
+    #     response = ResponseParser().getResponse(fromClient["payload"], fromClient["endpoint"])
+    #     response['type'] = 'taskAdded'
+    #     emit('dataOut', response, callback=SocketHandler.ack, broadcast=True)

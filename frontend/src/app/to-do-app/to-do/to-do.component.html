@@ -3,30 +3,6 @@
         <h1 id="pageTitle">Task Organizer</h1>
         <button id="logOutButton" (click)="disconnect()">Log out</button>
     </div>
-    <!-- Remove later -->
-    <!-- <li *ngFor="let person of formTestingList">
-        <div>
-            <p>Name: {{person.name}}</p>
-            <p>Age: {{person.age}}</p>
-        </div>
-        <form [formGroup]="reactive_form">
-            <p>Reactive form</p>
-            <input type="text" placeholder="Name" formControlName="name">
-            <input type="number" placeholder="Age" formControlName="age">
-            <button type="button" (click)="addPersonReactive()">Add Person</button>
-        </form>
-        <br>
-        <p>{{reactive_form.get('name').value}}</p>
-        <p>{{reactive_form.get('age').value}}</p>
-        <form #templateForm="ngForm">
-            <p>Template form</p>
-            <input type="text" placeholder="Name" name="personName" [(ngModel)]="template_form.name">
-            <input type="number" placeholder="Age" name="personAge" [(ngModel)]="template_form.age">
-            <button type="button" (click)="addPersonTemplate()">Add Person</button>
-        </form>
-    </li> -->
-    <!-- Remove later -->
-
     <ul>
         <!--Create a new agenda button-->
         <form [formGroup]="newAgendaForm">
