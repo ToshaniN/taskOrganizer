@@ -2,7 +2,7 @@
 useFlaskApi = False
 
 # URL for flask_api server
-apiURL = 'http://localhost:5000/' #'http://api_server:5000/'
+apiURL = 'http://api_server:5000/'   # 'http://localhost:5000/'
 
 # Port on which to run this server
 port = 5001 

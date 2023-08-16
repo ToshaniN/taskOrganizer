@@ -1,20 +1,6 @@
 version: '3.3'
 
 services:
-  # backend:
-  #   build: ./backend
-  #   image: task_organizer_backend
-  #   container_name: backend
-  #   restart: always
-  #   ports:
-  #     - "5000:5000"       # Flask API
-  #     - "5001:5001"       # Flask SocketIO
-  #   expose:
-  #     - "5000"
-  #     - "5001"
-  #   depends_on:
-  #     - database
-
   socket_server:
     build: ./backend/flask_socket
     image: task_organizer_socket
@@ -26,6 +12,8 @@ services:
       - "5001"
     depends_on:
       - api_server
+    volumes:
+      - api_handlers:/flask_api
     
   api_server:
     build: ./backend/flask_api
@@ -38,6 +26,8 @@ services:
       - "5000"
     depends_on:
       - database
+    volumes:
+      - api_handlers:/flask_api
 
   frontend:
     build: ./frontend
@@ -46,24 +36,23 @@ services:
     restart: always
     ports:
       - "4200:80"
-    # depends_on:
-    #   - backend
+    depends_on:
+      - socket_server
   
   database:
-    image: mysql:latest
+    build: .
     container_name: database
     restart: always
     environment:
       - MYSQL_DATABASE=todolist
       - MYSQL_ROOT_PASSWORD=password123
-    # ports:
-    #   - '3306:3306'
+    ports:
+      - '5002:5002'
     expose:
-      - '3306'
+      - '5002'
     volumes:
       - mysqldb:/data/db
 
 volumes:
   mysqldb:
-
-    
+  api_handlers:

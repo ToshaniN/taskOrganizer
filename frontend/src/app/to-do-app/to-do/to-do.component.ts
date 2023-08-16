@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { SideContainerComponent } from '../side-container/side-container.component';
 import { SocketService, Payload } from '../../socket.service';
 import { Router } from '@angular/router';
+import { FlaskApiService } from '../../flask-api.service'
 
 @Component({
   selector: 'app-to-do',
@@ -110,7 +111,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   }
 
   constructor(private fb:FormBuilder, private socket:SocketService, 
-              private changeDetector: ChangeDetectorRef, private router: Router) { } 
+              private changeDetector: ChangeDetectorRef, private router: Router, private flask:FlaskApiService) { } 
   
   ngOnInit() {
     this.taskFormInit()
@@ -176,6 +177,18 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       console.error(err)
       alert("An error occurred")
     })
+
+     //Retrieves original view from database and saves it to the var that is displayed
+    //  this.flask.getHierarchy()
+    //  .subscribe({
+    //    next: (data) => {
+    //      this.agendaTaskHierarchy = data
+    //    },
+    //    error: (err) => {
+    //      console.error(err)
+    //      alert("An error occurred")
+    //    }
+    //  });     
   }
 
   // SOCKET METHODS ........................................................
@@ -392,13 +405,12 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
         ...((this.newDate.value != '') && {due_date: this.newDate.value}),
         ...((this.newPriority.value != '') && {priority: this.newPriority.value})  
       }
-      let jsonNewTask: Payload = {
+      let jsonNewTask = {
         "endpoint": 'task/create',
         "httpMethod": "post",
         "type": 'newTask',
         "payload": payload
       }
-      // this.socket.newTaskDataIn(jsonNewTask)
       this.socket.dataIn(jsonNewTask).then((acknowledgement) => {
         console.log("Event emitted (createTask) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {
@@ -433,7 +445,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.taskConfig.taskCopied = false
       return
     }
-    let jsonPayload: Payload = {
+    let jsonPayload = {
       "endpoint": 'task/update',
       "httpMethod": "post",
       "type": 'updateTask',
@@ -468,7 +480,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       let id = this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id
       let payload = {"id": id}
       console.log("Deleting task id: ", id)
-      let jsonPayload: Payload = {
+      let jsonPayload = {
         "endpoint":'task/delete',
         "httpMethod": "post",
         "type": 'deleteTask',
@@ -608,7 +620,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
 
   getAllComments(taskIndex, agendaIndex) {
     let payload = {"comment2task": this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id}
-    let jsonPayload: Payload = {
+    let jsonPayload = {
       "endpoint":'comment/get_all',
       "httpMethod": "post",
       "type": 'getComments',
@@ -635,7 +647,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       let commentToAdd = {"comment2task": this.agendaTaskHierarchy[agendaIndex].tasks[taskIndex].id,
                           "comment_text": this.commentConfig.newComment }
       console.log("Adding a new comment for task id: ", commentToAdd.comment2task)
-      let jsonPayload: Payload = {
+      let jsonPayload = {
         "endpoint":'comment/add',
         "httpMethod": "post",
         "type": 'newComment',
@@ -675,7 +687,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       return //nothing was changed
     }
     // let errorOccurred = false
-    let jsonPayload: Payload = {
+    let jsonPayload = {
       "endpoint":'comment/update',
       "httpMethod": "post",
       "type": 'updateComment',
@@ -707,7 +719,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     if (answer) {
       let payload = {"id": this.commentConfig.comments[commentIndex].id}
       console.log("Deleting comment id: ", payload.id)
-      let jsonPayload: Payload = {
+      let jsonPayload = {
         "endpoint":'comment/remove',
         "httpMethod": "post",
         "type": 'deleteComment',
@@ -777,7 +789,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     if (this.newAgendaName.valid) {
       console.log("Creating new agenda")
       let payload = {"name": this.newAgendaName.value}
-      let jsonPayload: Payload = {
+      let jsonPayload = {
         "endpoint": 'agenda/create',
         "httpMethod": "post",
         "type": 'newAgenda',
@@ -818,13 +830,12 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.agendaConfig.agendaCopied = false
       return
     }
-    let jsonPayload: Payload = {
+    let jsonPayload = {
       "endpoint": 'agenda/update',
       "httpMethod": "post",
       "type": 'updateAgenda',
       "payload": payload
     }
-    // let errorOccurred = false
     this.socket.dataIn(jsonPayload).then((acknowledgement) => {
       console.log("Event emitted (updateAgenda) and back in component. Info received: ", acknowledgement)
       if (acknowledgement['errCode'] == 0) {
@@ -839,9 +850,6 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.revertAgendaToPreviousState(agendaIndex)
       alert("An error occurred")
     })
-    // if (errorOccurred) { //return edits to previous value
-    //   this.revertAgendaToPreviousState(agendaIndex)
-    // }
     this.agendaConfig.agendaCopied = false
   }
 
@@ -852,7 +860,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
     if (answer) {
       let payload = {"id": this.agendaTaskHierarchy[agendaIndex].id}
       console.log("Deleting agenda id: ", payload.id)
-      let jsonPayload: Payload = {
+      let jsonPayload = {
         "endpoint": 'agenda/delete',
         "httpMethod": "post",
         "type": 'deleteAgenda',

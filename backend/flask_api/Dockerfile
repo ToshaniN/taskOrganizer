@@ -8,4 +8,4 @@ RUN pip install -r flask_api/requirements.txt
 
 EXPOSE 5000
 
-CMD ["python","flask_api/main.py"]
+CMD ["python","-u","flask_api/main.py"]

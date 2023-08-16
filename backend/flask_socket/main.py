@@ -1,4 +1,5 @@
 from app import app, socketio
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, port=5001)
+    print("socket starting")
+    socketio.run(app, debug=True, host='socket_server', port=5001)
