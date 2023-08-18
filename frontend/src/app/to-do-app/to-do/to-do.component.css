@@ -1,0 +1,124 @@
+/* General */
+ul {
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+td,th {
+    padding-right: 25px;
+}
+
+table, th, td {
+    border-bottom: 2px solid;
+    border-collapse: collapse;
+    border-color: bisque;
+  }
+
+body {
+    background-color:floralwhite;
+    font-family: Cambria, Cochin;
+
+}
+
+button {
+    background-color: rgb(138, 207, 209);
+    border-radius: 5px;
+}
+
+input, select, option {
+    background-color: floralwhite;
+    border-radius: 5px;
+}
+
+option[value=""][disabled] {
+    display: none;
+}
+
+h1 {
+    text-align: center;
+}
+
+h4, textarea {
+    margin-left: 10px;
+}
+
+textarea {
+    background-color: floralwhite;
+    border-radius: 5px;
+    width: 300px;
+}
+
+input, p {
+    margin: 0;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+p:hover, #AName h2:hover {
+    background-color: rgb(138, 207, 209);
+    border-radius: 5px;
+}
+
+/* ID Specific */
+#AName, #AStatus {
+    display: inline-block;
+    margin-bottom: 0px;
+    width: 450px;
+}
+
+#AName h2, #AName input {
+    margin: 0;
+    padding: 0;
+}
+
+#statusLabel, #statusVal {
+    /* display: inline-block; */
+    margin-bottom: 0;
+}
+
+#agendaHeader {
+    background-color:bisque;
+    padding-bottom: 5px;
+}
+
+#tasksHeading {
+    background-color: rgb(138, 207, 209);
+    margin-bottom: 0px;
+    margin-top: 5px;
+}
+
+#taskName, #taskInfo {
+    display: inline-block;
+}
+
+#taskName, #taskDate, #taskPrior {
+    margin-right: 25px;
+    margin-left: 2px;
+}
+
+#desText {
+    width: 500px;
+}
+
+/* #pageTitle, #logOutButton {
+    display: inline-block;
+} */
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#pageTitle {
+    flex: 1;
+    text-align: center;
+    /* display: inline-block;
+    margin: 0 auto; width: 300px; */
+}
+
+#logOutButton {
+    /* display: inline-block; */
+    /* float: right; */
+    margin-right: 10px;
+}

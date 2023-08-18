@@ -1,0 +1,25 @@
+body {
+    background-color:floralwhite;
+    font-family: Cambria, Cochin;
+    text-align: center;
+}
+
+button {
+    background-color: rgb(138, 207, 209);
+    border-radius: 5px;
+}
+
+input {
+    background-color: floralwhite;
+    border-radius: 5px;
+}
+
+label {
+    background-color: bisque;
+}
+
+h1 {
+    background-color: bisque;
+}
+
+
