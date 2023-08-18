@@ -177,18 +177,6 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       console.error(err)
       alert("An error occurred")
     })
-
-     //Retrieves original view from database and saves it to the var that is displayed
-    //  this.flask.getHierarchy()
-    //  .subscribe({
-    //    next: (data) => {
-    //      this.agendaTaskHierarchy = data
-    //    },
-    //    error: (err) => {
-    //      console.error(err)
-    //      alert("An error occurred")
-    //    }
-    //  });     
   }
 
   // SOCKET METHODS ........................................................
@@ -324,8 +312,10 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
   onDeleteCommentEvent(fromSocket) {
     if (fromSocket['errCode'] == 0) {
       let commentIndex = this.commentConfig.comments.findIndex(c => c.id == fromSocket.datarec.id)
-      this.commentConfig.comments.splice(commentIndex, 1)
-      console.log("Success in updateViewDeleteComment: ", fromSocket)
+      if (commentIndex > -1) {
+        this.commentConfig.comments.splice(commentIndex, 1)
+        console.log("Success in updateViewDeleteComment: ", fromSocket)
+      }      
     } else {
       console.log("Failure in updateViewDeleteComment: ", fromSocket)
     }
@@ -414,7 +404,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.socket.dataIn(jsonNewTask).then((acknowledgement) => {
         console.log("Event emitted (createTask) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {
-          this.agendaTaskHierarchy[agendaIndex].tasks.push(acknowledgement['datarec'])
+          // this.agendaTaskHierarchy[agendaIndex].tasks.push(acknowledgement['datarec'])
           console.log("Success in createTask: ", acknowledgement)
         } else {
           console.log("Failure in createTask: ", acknowledgement)
@@ -490,7 +480,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
         console.log("Event emitted (deleteTask) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {
           // remove task from view
-          this.agendaTaskHierarchy[agendaIndex].tasks.splice(taskIndex,1)
+          // this.agendaTaskHierarchy[agendaIndex].tasks.splice(taskIndex,1)
           console.log("Success in deleteTask: ", acknowledgement)
         } else {
           console.log("Failure in deleteTask: ", acknowledgement)
@@ -656,7 +646,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.socket.dataIn(jsonPayload).then((acknowledgement) => {
         console.log("Event emitted (addComment) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {
-          this.commentConfig.comments.push(acknowledgement["datarec"])
+          // this.commentConfig.comments.push(acknowledgement["datarec"])
           console.log("Success in addComment: ", acknowledgement)
         } else {
           console.log("Failure in addComment: ", acknowledgement)
@@ -728,7 +718,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.socket.dataIn(jsonPayload).then((acknowledgement) => {
         console.log("Event emitted (deleteComment) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {
-          this.commentConfig.comments.splice(commentIndex, 1)
+          // this.commentConfig.comments.splice(commentIndex, 1)
           console.log("Success in deleteComment: ", acknowledgement)
         } else {
           console.log("Failure in deleteComment: ", acknowledgement)
@@ -798,7 +788,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.socket.dataIn(jsonPayload).then((acknowledgement) => {
         console.log("Event emitted (createAgenda) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {          
-          this.agendaTaskHierarchy.unshift(acknowledgement["datarec"])
+          // this.agendaTaskHierarchy.unshift(acknowledgement["datarec"])
           console.log("Success in createAgenda: ", acknowledgement)
         } else {
           console.log("Failure in createAgenda: ", acknowledgement)
@@ -869,7 +859,7 @@ export class ToDoComponent implements OnInit, AfterContentChecked  {
       this.socket.dataIn(jsonPayload).then((acknowledgement) => {
         console.log("Event emitted (deleteAgenda) and back in component. Info received: ", acknowledgement)
         if (acknowledgement['errCode'] == 0) {
-          this.agendaTaskHierarchy.splice(agendaIndex,1)
+          // this.agendaTaskHierarchy.splice(agendaIndex,1)
           console.log("Success in deleteAgenda: ", acknowledgement)
         } else {
           console.log("Failure in deleteAgenda: ", acknowledgement)

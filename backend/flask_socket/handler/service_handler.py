@@ -1,6 +1,6 @@
 import sys
 # sys.path.insert(0, 'C:/Users/tosha/Documents/Github repos/taskOrganizer/backend/flask_api')
-sys.path.insert(0, '/flask_api')
+sys.path.insert(0, '/flask_api')  # Use this path when running app with docker. Use above path structure when running normally 
 from handlers.task_handler import TaskHandler 
 from handlers.agenda_handler import AgendaHandler
 from handlers.comment_handler import CommentHandler

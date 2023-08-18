@@ -26,5 +26,5 @@ class SocketHandler:
         response = ResponseParser().getResponse(fromClient["payload"], fromClient["endpoint"])
         if (eventName != 'getHierarchy' and eventName != 'getComments'):
             response['type'] = responseEventName[eventName]
-            emit('dataOut', response, callback=self.ack, broadcast=True, include_self=False)
+            emit('dataOut', response, callback=self.ack, broadcast=True, include_self=True)
         return response
